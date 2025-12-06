@@ -59,7 +59,6 @@ val StatusGreenRing = Color(0xFF86EFAC) // Verde pastel brillante para el anillo
 val StatusGreenText = Color(0xFF10B981)
 val DarkAlertBg = Color(0xFF282B46) // Mantenemos la alerta oscura para contraste
 
-// --- 2. MainActivity ---
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,13 +68,11 @@ class MainActivity : ComponentActivity() {
             val authViewModel: AuthViewModel = viewModel()
 
             MaterialTheme {
-                // Fondo global degradado (se aplica a todas las pantallas transparentes)
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(brush = GradientBackground)
                 ) {
-                    // Llamamos a la App principal que tiene la Navegación y el Scaffold
                     DispoAhoraApp(authViewModel)
                 }
             }
@@ -83,18 +80,16 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// --- 3. Pantalla Principal ---
 @Composable
 fun DispoAhoraScreen(username: String?, onOpenProfile: () -> Unit) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 20.dp) // Un poco más de margen lateral
+                    .padding(horizontal = 20.dp)
                     .verticalScroll(rememberScrollState())
             ) {
-                Spacer(modifier = Modifier.height(24.dp)) // Espacio para la barra de estado
+                Spacer(modifier = Modifier.height(24.dp))
 
-                // Nueva Cabecera "Hola, Tomás"
                 HeaderProfileSection(username, onOpenProfile)
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -105,11 +100,9 @@ fun DispoAhoraScreen(username: String?, onOpenProfile: () -> Unit) {
                 QuickActivitySection()
                 Spacer(modifier = Modifier.height(20.dp))
                 ContactsNearbySection()
-                Spacer(modifier = Modifier.height(100.dp)) // Espacio final extra para el BottomBar flotante
+                Spacer(modifier = Modifier.height(20.dp))
             }
         }
-
-// --- 4. Componentes Actualizados ---
 
 @Composable
 fun HeaderProfileSection(username: String?, onOpenProfile: () -> Unit) {
@@ -129,13 +122,13 @@ fun HeaderProfileSection(username: String?, onOpenProfile: () -> Unit) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     imageVector = Icons.Outlined.LocationOn,
-                    contentDescription = null,
+                    contentDescription = "Ubicación actual",
                     tint = TextGrayLight,
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = "Barcelona, Eixample",
+                    text = "Castellón de la Plana",
                     color = TextGrayLight,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium
@@ -149,7 +142,7 @@ fun HeaderProfileSection(username: String?, onOpenProfile: () -> Unit) {
                 .size(48.dp)
                 .clip(CircleShape)
                 .clickable { onOpenProfile() }
-                .background(Color(0xFFE5E7EB)), // Gris claro placeholder
+                .background(Color(0xFFE5E7EB)),
             contentAlignment = Alignment.Center
         ) {
             // Aquí iría la Image(...), usamos texto por ahora
