@@ -27,7 +27,6 @@ import com.example.dispoahora.GradientBackground
 import com.example.dispoahora.TextDark
 import com.example.dispoahora.TextGrayLight
 
-// Colores específicos para esta pantalla (basados en tu imagen)
 val LightPurpleBg = Color(0xFFEBEBF5) // Fondo de las secciones
 val EditButtonBg = Color(0xFFE0E7FF) // Azul muy claro para botón editar
 val EditButtonText = Color(0xFF4F46E5) // Azul índigo
@@ -38,7 +37,6 @@ val DangerText = Color(0xFFDC2626) // Rojo fuerte
 fun ProfileScreen(
     username: String?,
     email: String,
-    onBack: () -> Unit,
     onSignOut: () -> Unit
 ) {
     // Usamos el mismo fondo degradado que la home
@@ -54,10 +52,6 @@ fun ProfileScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(24.dp))
-
-            // --- Cabecera (Botón atrás y Título) ---
-            // Nota: Aquí reutilizamos el estilo de "Hola, Tomás" pero adaptado
-            ProfileHeader(username, onBack)
 
             Spacer(modifier = Modifier.height(20.dp))
 
@@ -128,7 +122,7 @@ fun ProfileScreen(
 // --- COMPONENTES AUXILIARES ---
 
 @Composable
-fun ProfileHeader(username: String?, onBack: () -> Unit) {
+fun ProfileHeader(username: String?) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -152,8 +146,7 @@ fun ProfileHeader(username: String?, onBack: () -> Unit) {
             modifier = Modifier
                 .size(44.dp)
                 .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.5f))
-                .clickable { onBack() }, // Al hacer clic volvemos
+                .background(Color.White.copy(alpha = 0.5f)),
             contentAlignment = Alignment.Center
         ) {
             Text("T", fontWeight = FontWeight.Bold, color = TextDark, fontSize = 18.sp)

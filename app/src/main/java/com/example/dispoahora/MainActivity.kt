@@ -75,66 +75,17 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
         setContent {
-            // 1. Obtener y gestionar la instancia del ViewModel
             val authViewModel: AuthViewModel = viewModel()
-            // 2. Observar el estado de autenticación de forma reactiva
-            val authState by authViewModel.authState.collectAsState()
 
-            var showProfile by remember { mutableStateOf(false) }
-
-            BackHandler(enabled = showProfile) {
-                showProfile = false
-            }
-
-            MaterialTheme { // O tu tema personalizado
-
-                // 3. El Router de Autenticación
-                when (authState) {
-
-                    is AuthState.Loading -> {
-                        // Muestra una pantalla de carga mientras se verifica la sesión
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-
-                    is AuthState.SignedOut -> {
-                        // El usuario no está logueado: Muestra la pantalla de inicio de sesión
-                        LoginScreen(authViewModel)
-                    }
-
-                    is AuthState.SignedIn -> {
-                        val userName = (authState as AuthState.SignedIn).userName
-                        // Obtenemos el email si es posible, o un placeholder
-                        val userEmail = "usuario@ejemplo.com" // Podrías añadir email al AuthState si quieres
-
-                        if (showProfile) {
-                            // MOSTRAR PANTALLA DE PERFIL
-                            ProfileScreen(
-                                username = userName,
-                                email = userEmail,
-                                onBack = { showProfile = false }, // Volver a Home
-                                onSignOut = { authViewModel.signOut() } // Cerrar sesión
-                            )
-                        } else {
-                            // MOSTRAR PANTALLA PRINCIPAL
-                            DispoAhoraScreen(
-                                username = userName,
-                                onOpenProfile = { showProfile = true } // Ir al perfil
-                            )
-                        }
-                    }
-
-                    is AuthState.Error -> {
-                        // Manejo de errores de red o sesión
-                        val error = authState as AuthState.Error
-                        // Podrías mostrar un diálogo de error o redirigir al Login
-                        LoginScreen(authViewModel)
-                        // Opcional: Mostrar un Snackbar con el error.
-                    }
+            MaterialTheme {
+                // Fondo global degradado (se aplica a todas las pantallas transparentes)
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(brush = GradientBackground)
+                ) {
+                    // Llamamos a la App principal que tiene la Navegación y el Scaffold
+                    DispoAhoraApp(authViewModel)
                 }
             }
         }
@@ -144,20 +95,9 @@ class MainActivity : ComponentActivity() {
 // --- 3. Pantalla Principal ---
 @Composable
 fun DispoAhoraScreen(username: String?, onOpenProfile: () -> Unit) {
-    // Usamos un Box para el fondo degradado que ocupe toda la pantalla
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(brush = GradientBackground)
-    ) {
-        Scaffold(
-            containerColor = Color.Transparent, // Importante para ver el degradado
-            bottomBar = { CustomBottomBar() }
-        ) { paddingValues ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues)
                     .padding(horizontal = 20.dp) // Un poco más de margen lateral
                     .verticalScroll(rememberScrollState())
             ) {
@@ -177,8 +117,6 @@ fun DispoAhoraScreen(username: String?, onOpenProfile: () -> Unit) {
                 Spacer(modifier = Modifier.height(100.dp)) // Espacio final extra para el BottomBar flotante
             }
         }
-    }
-}
 
 // --- 4. Componentes Actualizados ---
 
@@ -577,7 +515,9 @@ fun ContactItem(
 }
 
 @Composable
-fun CustomBottomBar() {
+fun CustomBottomBar(
+    onProfileClick: () -> Unit = {}
+) {
     // Barra flotante con esquinas redondeadas, fondo blanco
     Box(
         modifier = Modifier
@@ -607,7 +547,7 @@ fun CustomBottomBar() {
             }
 
             // Item 3: Ajustes (Nuevo)
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onProfileClick() }) {
                 Icon(Icons.Outlined.Settings, contentDescription = null, tint = TextGrayLight, modifier = Modifier.size(24.dp))
                 Spacer(modifier = Modifier.height(2.dp))
                 Text("Ajustes", color = TextGrayLight, fontSize = 10.sp)
