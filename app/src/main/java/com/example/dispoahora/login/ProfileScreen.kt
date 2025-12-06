@@ -27,7 +27,6 @@ import com.example.dispoahora.GradientBackground
 import com.example.dispoahora.TextDark
 import com.example.dispoahora.TextGrayLight
 
-val LightPurpleBg = Color(0xFFEBEBF5) // Fondo de las secciones
 val EditButtonBg = Color(0xFFE0E7FF) // Azul muy claro para botón editar
 val EditButtonText = Color(0xFF4F46E5) // Azul índigo
 val DangerBg = Color(0xFFFEE2E2) // Rojo muy claro
@@ -56,7 +55,7 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(20.dp))
 
             // --- Tarjeta Principal del Perfil ---
-            MainProfileCard(username, email)
+            MainProfileCard(username)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -65,11 +64,11 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(8.dp))
             SectionCard {
                 InfoItem(label = "Nombre", value = username)
-                Divider(color = Color.Black.copy(alpha = 0.05f))
+                HorizontalDivider(color = Color.Black.copy(alpha = 0.05f))
                 InfoItem(label = "Usuario", value = "@${username?.lowercase()?.replace(" ", "")}")
-                Divider(color = Color.Black.copy(alpha = 0.05f))
+                HorizontalDivider(color = Color.Black.copy(alpha = 0.05f))
                 InfoItem(label = "Teléfono", value = "+34 ••• •• 321")
-                Divider(color = Color.Black.copy(alpha = 0.05f))
+                HorizontalDivider(color = Color.Black.copy(alpha = 0.05f))
                 InfoItem(label = "Correo", value = email, showArrow = false)
             }
 
@@ -80,11 +79,11 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(8.dp))
             SectionCard {
                 InfoItem(label = "Seguidores", value = "Personas que pueden ver tu estado público", badgeCount = 128)
-                Divider(color = Color.Black.copy(alpha = 0.05f))
+                HorizontalDivider(color = Color.Black.copy(alpha = 0.05f))
                 InfoItem(label = "Siguiendo", value = "Contactos de los que ves disponibilidad", badgeCount = 94)
-                Divider(color = Color.Black.copy(alpha = 0.05f))
+                HorizontalDivider(color = Color.Black.copy(alpha = 0.05f))
                 InfoItem(label = "Círculo cercano", value = "Más prioridad en estados y coincidencias", badgeCount = 18)
-                Divider(color = Color.Black.copy(alpha = 0.05f))
+                HorizontalDivider(color = Color.Black.copy(alpha = 0.05f))
                 InfoItem(label = "Bloqueados", value = "Personas que no podrán verte ni escribirte")
             }
 
@@ -155,7 +154,7 @@ fun ProfileHeader(username: String?) {
 }
 
 @Composable
-fun MainProfileCard(username: String?, email: String) {
+fun MainProfileCard(username: String?) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.7f)),
         shape = RoundedCornerShape(24.dp),

@@ -34,27 +34,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
-import androidx.activity.compose.BackHandler
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
-
-// Asegúrate de que todas estas importaciones sean correctas:
 import com.example.dispoahora.login.AuthViewModel
-import com.example.dispoahora.login.AuthState
-import com.example.dispoahora.login.LoginScreen
-import com.example.dispoahora.login.ProfileScreen
 
 // --- 1. Nueva Paleta de Colores "Pastel Day" ---
 // Degradado de fondo
-val PastelBlueTop = Color(0xFFF0F4F8)   // Azul muy pálido, casi blanco
-val PastelBlueBottom = Color(0xFFC4D6EE) // Azul lavanda suave
+val PastelBlueTop = Color(0xFFD3E1F0)   // Azul muy pálido, casi blanco
+val PastelBlueBottom = Color(0xFFA0B8D7) // Azul lavanda suave
 val GradientBackground = Brush.verticalGradient(
     colors = listOf(PastelBlueTop, PastelBlueBottom)
 )
@@ -66,7 +54,7 @@ val TextGrayLight = Color(0xFF6B7280) // Texto secundario gris
 val AccentBlue = Color(0xFF5B8DEF) // Azul para botones activos (como Café)
 val StatusGreenRing = Color(0xFF86EFAC) // Verde pastel brillante para el anillo
 val StatusGreenText = Color(0xFF10B981)
-val DarkAlertBg = Color(0xFF2D3748) // Mantenemos la alerta oscura para contraste
+val DarkAlertBg = Color(0xFF282B46) // Mantenemos la alerta oscura para contraste
 
 // --- 2. MainActivity ---
 class MainActivity : ComponentActivity() {

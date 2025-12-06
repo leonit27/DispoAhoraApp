@@ -63,10 +63,6 @@ class AuthViewModel : ViewModel() {
                     // Asignación explícita aquí
                     _authState.value = AuthState.Error("Fallo al refrescar token.")
                 }
-
-                else -> {
-                    // Ignoramos otros estados intermedios
-                }
             }
         }.launchIn(viewModelScope)
     }
