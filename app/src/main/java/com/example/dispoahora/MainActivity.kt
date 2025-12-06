@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
+import androidx.compose.animation.core.*
+import androidx.compose.ui.draw.rotate
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -36,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dispoahora.login.AuthViewModel
 
@@ -210,7 +213,6 @@ fun MainStatusCard() {
             .background(CardWhite, RoundedCornerShape(24.dp))
             .padding(24.dp)
     ) {
-        // Cabecera: Título pequeño y tag
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -239,13 +241,13 @@ fun MainStatusCard() {
         ) {
             // Textos
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "Libre ahora",
-                    color = TextDark,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
+//                Text(
+//                    text = "Libre ahora",
+//                    color = TextDark,
+//                    fontSize = 28.sp,
+//                    fontWeight = FontWeight.ExtraBold
+//                )
+//                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Avisamos a tus contactos de confianza que estás disponible.",
                     color = TextGrayLight,
@@ -256,11 +258,30 @@ fun MainStatusCard() {
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            // Anillo de Estado
+            val infiniteTransition = rememberInfiniteTransition(label = "anillo_animacion")
+            val angle by infiniteTransition.animateFloat(
+                initialValue = 0f,
+                targetValue = 360f,
+                animationSpec = infiniteRepeatable(
+                    // durationMillis: Cuanto más bajo, más rápido gira (3000ms = 3 segundos por vuelta)
+                    animation = tween(durationMillis = 3000, easing = LinearEasing),
+                    repeatMode = RepeatMode.Restart
+                ),
+                label = "angulo_rotacion"
+            )
+
+// Anillo de Estado
             Box(contentAlignment = Alignment.Center) {
-                // Degradado del anillo
-                Canvas(modifier = Modifier.size(90.dp)) {
+
+                // Degradado del anillo (ANIMADO)
+                Canvas(
+                    modifier = Modifier
+                        .size(90.dp)
+                        .rotate(angle) // <--- ¡AQUÍ APLICAMOS LA MAGIA!
+                ) {
                     val brush = Brush.sweepGradient(
+                        // Nota: Es importante que el primer y el último color sean iguales
+                        // para que no se note el corte al girar.
                         colors = listOf(StatusGreenRing, Color(0xFF3B82F6), StatusGreenRing)
                     )
                     drawCircle(
@@ -268,11 +289,13 @@ fun MainStatusCard() {
                         style = Stroke(width = 10.dp.toPx(), cap = StrokeCap.Round)
                     )
                 }
-                // Interior oscuro para contraste (según imagen)
+
+                // Interior oscuro para contraste (ESTÁTICO - No rota)
+                // Al estar fuera del Canvas que rotamos, el texto se mantiene legible.
                 Box(
                     modifier = Modifier
                         .size(70.dp)
-                        .background(Color(0xFF0F172A), CircleShape) // Mantenemos interior oscuro para pop visual
+                        .background(Color(0xFF0F172A), CircleShape)
                         .border(1.dp, Color.White.copy(alpha = 0.1f), CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
