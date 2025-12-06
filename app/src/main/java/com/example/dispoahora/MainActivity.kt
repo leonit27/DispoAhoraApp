@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -33,18 +34,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
-
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 // Asegúrate de que todas estas importaciones sean correctas:
 import com.example.dispoahora.login.AuthViewModel
 import com.example.dispoahora.login.AuthState
 import com.example.dispoahora.login.LoginScreen
+import com.example.dispoahora.login.ProfileScreen
 
 // --- 1. Nueva Paleta de Colores "Pastel Day" ---
 // Degradado de fondo
@@ -75,6 +80,12 @@ class MainActivity : ComponentActivity() {
             // 2. Observar el estado de autenticación de forma reactiva
             val authState by authViewModel.authState.collectAsState()
 
+            var showProfile by remember { mutableStateOf(false) }
+
+            BackHandler(enabled = showProfile) {
+                showProfile = false
+            }
+
             MaterialTheme { // O tu tema personalizado
 
                 // 3. El Router de Autenticación
@@ -96,9 +107,25 @@ class MainActivity : ComponentActivity() {
                     }
 
                     is AuthState.SignedIn -> {
-                        val user = (authState as AuthState.SignedIn).userName
-                        // El usuario está logueado: Muestra la aplicación principal
-                        DispoAhoraScreen(username = user)
+                        val userName = (authState as AuthState.SignedIn).userName
+                        // Obtenemos el email si es posible, o un placeholder
+                        val userEmail = "usuario@ejemplo.com" // Podrías añadir email al AuthState si quieres
+
+                        if (showProfile) {
+                            // MOSTRAR PANTALLA DE PERFIL
+                            ProfileScreen(
+                                username = userName,
+                                email = userEmail,
+                                onBack = { showProfile = false }, // Volver a Home
+                                onSignOut = { authViewModel.signOut() } // Cerrar sesión
+                            )
+                        } else {
+                            // MOSTRAR PANTALLA PRINCIPAL
+                            DispoAhoraScreen(
+                                username = userName,
+                                onOpenProfile = { showProfile = true } // Ir al perfil
+                            )
+                        }
                     }
 
                     is AuthState.Error -> {
@@ -116,7 +143,7 @@ class MainActivity : ComponentActivity() {
 
 // --- 3. Pantalla Principal ---
 @Composable
-fun DispoAhoraScreen(username: String?) {
+fun DispoAhoraScreen(username: String?, onOpenProfile: () -> Unit) {
     // Usamos un Box para el fondo degradado que ocupe toda la pantalla
     Box(
         modifier = Modifier
@@ -137,7 +164,7 @@ fun DispoAhoraScreen(username: String?) {
                 Spacer(modifier = Modifier.height(24.dp)) // Espacio para la barra de estado
 
                 // Nueva Cabecera "Hola, Tomás"
-                HeaderProfileSection(username)
+                HeaderProfileSection(username, onOpenProfile)
 
                 Spacer(modifier = Modifier.height(24.dp))
                 AlertBanner()
@@ -156,7 +183,7 @@ fun DispoAhoraScreen(username: String?) {
 // --- 4. Componentes Actualizados ---
 
 @Composable
-fun HeaderProfileSection(username: String?) {
+fun HeaderProfileSection(username: String?, onOpenProfile: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -192,6 +219,7 @@ fun HeaderProfileSection(username: String?) {
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
+                .clickable { onOpenProfile() }
                 .background(Color(0xFFE5E7EB)), // Gris claro placeholder
             contentAlignment = Alignment.Center
         ) {

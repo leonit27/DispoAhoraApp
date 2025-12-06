@@ -19,15 +19,15 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.dispoahora.login.AuthViewModel
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import kotlinx.coroutines.launch
 import java.security.MessageDigest
 import java.util.UUID
+import com.example.dispoahora.BuildConfig
 
-const val WEB_GOOGLE_CLIENT_ID = "943140821499-6u5r582k2rtn649kbs88269ug9sronm9.apps.googleusercontent.com"
+const val WEB_GOOGLE_CLIENT_ID = BuildConfig.WEB_GOOGLE_CLIENT_ID
 
 @Composable
 fun LoginScreen(
