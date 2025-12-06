@@ -90,8 +90,10 @@ fun DispoAhoraApp(authViewModel: AuthViewModel) {
             // RUTA: HOME
             composable(Screen.Home.route) {
                 val user = (authState as? AuthState.SignedIn)?.userName ?: "Usuario"
+                val avatar = (authState as? AuthState.SignedIn)?.avatarUrl
                 DispoAhoraScreen(
                     username = user,
+                    avatar,
                     onOpenProfile = { navController.navigate(Screen.Profile.route) }
                 )
             }

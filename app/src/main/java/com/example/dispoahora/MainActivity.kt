@@ -39,8 +39,10 @@ import androidx.core.view.WindowCompat
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dispoahora.login.AuthViewModel
+import coil.compose.AsyncImage
 
 // --- 1. Nueva Paleta de Colores "Pastel Day" ---
 // Degradado de fondo
@@ -81,7 +83,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun DispoAhoraScreen(username: String?, onOpenProfile: () -> Unit) {
+fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () -> Unit) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -90,7 +92,7 @@ fun DispoAhoraScreen(username: String?, onOpenProfile: () -> Unit) {
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
 
-                HeaderProfileSection(username, onOpenProfile)
+                HeaderProfileSection(username, avatarUrl, onOpenProfile)
 
                 Spacer(modifier = Modifier.height(24.dp))
                 AlertBanner()
@@ -105,7 +107,7 @@ fun DispoAhoraScreen(username: String?, onOpenProfile: () -> Unit) {
         }
 
 @Composable
-fun HeaderProfileSection(username: String?, onOpenProfile: () -> Unit) {
+fun HeaderProfileSection(username: String?, avatarUrl: String? = null, onOpenProfile: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -136,7 +138,6 @@ fun HeaderProfileSection(username: String?, onOpenProfile: () -> Unit) {
             }
         }
 
-        // Columna Derecha: Foto de Perfil
         Box(
             modifier = Modifier
                 .size(48.dp)
@@ -145,13 +146,21 @@ fun HeaderProfileSection(username: String?, onOpenProfile: () -> Unit) {
                 .background(Color(0xFFE5E7EB)),
             contentAlignment = Alignment.Center
         ) {
-            // Aquí iría la Image(...), usamos texto por ahora
-            Text(
-                text = "T",
-                color = TextGrayLight,
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
+            if (!avatarUrl.isNullOrBlank()) {
+                AsyncImage(
+                    model = avatarUrl,
+                    contentDescription = "Foto de perfil",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                Text(
+                    text = username?.take(1)?.uppercase() ?: "U",
+                    color = TextGrayLight,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
