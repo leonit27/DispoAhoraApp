@@ -118,8 +118,6 @@ fun ProfileScreen(
     }
 }
 
-// --- COMPONENTES AUXILIARES ---
-
 @Composable
 fun ProfileHeader(username: String?) {
     Row(

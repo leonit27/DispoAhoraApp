@@ -279,7 +279,7 @@ fun MainStatusCard() {
                 Canvas(
                     modifier = Modifier
                         .size(90.dp)
-                        .rotate(angle) // <--- ¡AQUÍ APLICAMOS LA MAGIA!
+                        .rotate(angle)
                 ) {
                     val brush = Brush.sweepGradient(
                         // Nota: Es importante que el primer y el último color sean iguales
