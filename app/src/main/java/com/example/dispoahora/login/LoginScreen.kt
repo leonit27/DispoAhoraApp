@@ -36,7 +36,6 @@ fun LoginScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    // Fondo oscuro alineado con el tema de la app
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Color(0xFF0B0F19)
@@ -50,7 +49,6 @@ fun LoginScreen(
         ) {
             Spacer(modifier = Modifier.height(64.dp))
 
-            // --- Sección Superior: Logo y Título ---
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "DISPOAHORA",
@@ -69,7 +67,6 @@ fun LoginScreen(
                 )
             }
 
-            // --- Sección Inferior: Botón de Login ---
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Button(
                     onClick = {

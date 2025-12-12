@@ -1,6 +1,5 @@
 package com.example.dispoahora.login
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.dispoahora.api.supabase
@@ -35,18 +34,12 @@ class AuthViewModel : ViewModel() {
     }
 
     private fun checkCurrentSession() {
-        // Usamos onEach + launchIn para un manejo de flujo más seguro en ViewModels
         supabase.auth.sessionStatus.onEach { status ->
-
-            // ❌ ERROR ANTERIOR: _authState.value = when(status) { ... }
-            // ✅ SOLUCIÓN: Usamos 'when' solo para decidir, no para asignar globalmente.
 
             when (status) {
                 is SessionStatus.Authenticated -> {
                     val user = status.session.user
                     if (user != null) {
-                        // Esta función YA actualiza el _authState internamente.
-                        // Al no haber un "=" antes del when, esto ya no da error.
                         getUserDataAndNavigate(user)
                     }
                 }
@@ -60,57 +53,73 @@ class AuthViewModel : ViewModel() {
                 }
 
                 is SessionStatus.RefreshFailure -> {
-                    // Asignación explícita aquí
                     _authState.value = AuthState.Error("Fallo al refrescar token.")
                 }
             }
         }.launchIn(viewModelScope)
     }
 
-        private fun getUserDataAndNavigate(user: UserInfo) {
-            val metadata = user.userMetadata
+    private fun getUserDataAndNavigate(user: UserInfo) {
+        val metadata = user.userMetadata
 
-            // 1. Intentamos obtener el nombre real de varias claves posibles que usa Google
-            // Usamos .jsonPrimitive.contentOrNull para obtener el texto limpio (sin comillas)
-            val realName = metadata?.get("full_name")?.jsonPrimitive?.contentOrNull
-                ?: metadata?.get("name")?.jsonPrimitive?.contentOrNull
-                ?: metadata?.get("given_name")?.jsonPrimitive?.contentOrNull // "given_name" es solo el nombre de pila (ej. Tomás)
+        /* Según el proveedor de las identidades, la clave recibida tiene diferente nombre:
+           - full_name: habitual en Supabase o Email
+           - name: estándar utilizado por OAuth de Google
+           - given_name: mandado también por Google por si no está el nombre completo
+           Por tanto, vamos comprobando las opciones con el operador (?:) hasta dar con la correcta,
+           utilizando .jsonPrimitive.contentOrNull para obtener el texto sin comillas */
 
-            val formattedName = realName
-                ?.trim()               // Elimina espacios al inicio/final
-                ?.substringBefore(" ") // Toma solo la primera palabra (antes del primer espacio)
-                ?.lowercase()          // Convierte "LEONARDO" a "leonardo"
-                ?.replaceFirstChar {   // Convierte la 'l' a 'L'
-                    if (it.isLowerCase()) it.titlecase() else it.toString()
-                }
+        val realName = metadata?.get("full_name")?.jsonPrimitive?.contentOrNull
+            ?: metadata?.get("name")?.jsonPrimitive?.contentOrNull
+            ?: metadata?.get("given_name")?.jsonPrimitive?.contentOrNull
 
-            val avatarUrl = metadata?.get("avatar_url")?.jsonPrimitive?.contentOrNull
-                ?: metadata?.get("picture")?.jsonPrimitive?.contentOrNull
+        /* Le damos formato para que únicamente se muestre el primer nombre con
+           la primera letra en mayúscula y el resto en minúsculas */
 
-            Log.d("AuthViewModel", "Usuario formateado: $formattedName")
-            _authState.value = AuthState.SignedIn(userName = formattedName, avatarUrl = avatarUrl)
-        }
+        val formattedName = realName
+            ?.trim()
+            ?.substringBefore(" ")
+            ?.lowercase()
+
+            /* Reemplazamos el primer carácter de la String, primero combrobando si es LowerCase
+               (ya cambiado anteriormente):
+               - Si es LowerCase: cambiamos el carácter a mayúsculas con .titlecase(), que
+                                  lo devuelve como String
+               - Si no es LowerCase (por ejemplo, algún número u otro carácter):
+                                  pasamos el carácter como String para mantener el tipo
+                                  de dato */
+            ?.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase() else it.toString()
+            }
+
+        /* - avatar_url: utilizado por Github y Supabase
+           - picture: estándar que utiliza Google para la imagen de perfil
+           Comprobamos ambos para asegurarnos de que exista la foto */
+
+        val avatarUrl = metadata?.get("avatar_url")?.jsonPrimitive?.contentOrNull
+            ?: metadata?.get("picture")?.jsonPrimitive?.contentOrNull
+
+        _authState.value = AuthState.SignedIn(userName = formattedName, avatarUrl = avatarUrl)
+    }
 
     fun signInWithGoogleIdToken(idToken: String, rawNonce: String) {
         viewModelScope.launch {
             try {
                 _authState.value = AuthState.Loading
 
-                // Metodo nativo de Supabase usando IDToken
                 supabase.auth.signInWith(IDToken) {
                     this.idToken = idToken
                     this.provider = Google
                     this.nonce = rawNonce
                 }
 
-                val user = supabase.auth.currentUserOrNull() // <--- En v3 es currentUserOrNull()
+                val user = supabase.auth.currentUserOrNull()
 
                 if (user != null) {
                     getUserDataAndNavigate(user)
                 } else {
                     _authState.value = AuthState.Error("Sesión iniciada pero no se recuperaron datos de usuario.")
                 }
-                // Si tiene éxito, el sessionStatus (en init) actualizará el estado a SignedIn
             } catch (e: Exception) {
                 _authState.value = AuthState.Error("Error en login con Google: ${e.message}")
             }
@@ -120,7 +129,6 @@ class AuthViewModel : ViewModel() {
     fun signOut() {
         viewModelScope.launch {
             try {
-                // LLAMADA ACTUALIZADA
                 supabase.auth.signOut()
             } catch (e: Exception) {
                 _authState.value = AuthState.Error("Fallo al cerrar sesión: ${e.message}")
