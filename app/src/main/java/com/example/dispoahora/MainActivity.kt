@@ -44,8 +44,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dispoahora.login.AuthViewModel
 import coil.compose.AsyncImage
 
-// --- 1. Nueva Paleta de Colores "Pastel Day" ---
-// Degradado de fondo
+import androidx.compose.material3.Text
+import com.mapbox.common.MapboxOptions
+import com.mapbox.geojson.Point
+import com.mapbox.maps.extension.compose.MapboxMap
+import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
+import com.mapbox.maps.extension.compose.style.MapStyle
 val PastelBlueTop = Color(0xFFD3E1F0)   // Azul muy pálido, casi blanco
 val PastelBlueBottom = Color(0xFFA0B8D7) // Azul lavanda suave
 val GradientBackground = Brush.verticalGradient(
@@ -66,6 +70,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
+        MapboxOptions.accessToken = "pk.eyJ1IjoibGVvbmFyZG8yNzA4IiwiYSI6ImNtajdpMzJoNTAwMGUzZHF6Y2sxNHpoYXYifQ.cmOn7gmknDabls4qGOgz4A"
+
         setContent {
             val authViewModel: AuthViewModel = viewModel()
 
@@ -78,6 +84,61 @@ class MainActivity : ComponentActivity() {
                     DispoAhoraApp(authViewModel)
                 }
             }
+        }
+    }
+}
+
+@Composable
+fun ContactsMapCard() {
+    // Estado inicial de la cámara (Madrid por defecto, luego usaremos GPS real)
+    val mapViewportState = rememberMapViewportState {
+        setCameraOptions {
+            zoom(14.0) // Zoom cercano tipo calle
+            center(Point.fromLngLat(-3.7038, 40.4168))
+            pitch(0.0) // Vista cenital (desde arriba)
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            // Estilo idéntico a tus otras Cards
+            .shadow(4.dp, RoundedCornerShape(24.dp), spotColor = Color(0xFF5B8DEF).copy(alpha = 0.1f))
+            .background(Color.White.copy(alpha = 0.8f), RoundedCornerShape(24.dp))
+            .padding(16.dp) // Padding interno de la tarjeta
+    ) {
+        // --- Título de la Sección ---
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text("Contactos cerca", color = Color(0xFF1F2937), fontWeight = FontWeight.Bold)
+                Text("Explora quién está libre a tu alrededor", color = Color(0xFF6B7280), fontSize = 11.sp)
+            }
+        }
+
+        // --- El Mapa ---
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(250.dp) // Altura fija para el mapa
+                .clip(RoundedCornerShape(16.dp)) // Redondeamos el mapa para que quede bonito
+        ) {
+            MapboxMap(
+                modifier = Modifier.fillMaxSize(),
+                mapViewportState = mapViewportState,
+                style = {
+                    // Usamos el estilo Light porque combina mejor con tu app pastel
+                    // También puedes usar: MapboxStandardStyle.LIGHT
+                    MapStyle(style = "mapbox://styles/mapbox/light-v11")
+                }
+            ) {
+                // AQUÍ IRÁN LOS PINES (MARCADORES) MÁS ADELANTE
+            }
+
+            // Opcional: Un pequeño botón o texto flotante sobre el mapa
+            // Text("Mapa en vivo", Modifier.align(Alignment.TopEnd).padding(8.dp), fontSize = 10.sp)
         }
     }
 }
@@ -101,7 +162,7 @@ fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () ->
                 Spacer(modifier = Modifier.height(20.dp))
                 QuickActivitySection()
                 Spacer(modifier = Modifier.height(20.dp))
-                ContactsNearbySection()
+                ContactsMapCard()
                 Spacer(modifier = Modifier.height(20.dp))
             }
         }

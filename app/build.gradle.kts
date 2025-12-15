@@ -31,6 +31,7 @@ android {
         buildConfigField("String", "SUPABASE_URL", "\"${localProperties.getProperty("SUPABASE_URL")}\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProperties.getProperty("SUPABASE_ANON_KEY")}\"")
         buildConfigField("String", "WEB_GOOGLE_CLIENT_ID", "\"${localProperties.getProperty("WEB_GOOGLE_CLIENT_ID")}\"")
+        buildConfigField("String", "MAPBOX_DOWNLOADS_TOKEN", "\"${localProperties.getProperty("MAPBOX_DOWNLOADS_TOKEN")}\"")
     }
 
     buildTypes {
@@ -74,27 +75,22 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-    // --- CORRECCIÓN DE SUPABASE (Versión 3.x) ---
-
     // 1. Usamos el BOM para gestionar versiones automáticamente (Evita conflictos)
     implementation(platform("io.github.jan-tennert.supabase:bom:3.0.2"))
 
     // 2. Módulos necesarios (Nota: Ya no ponemos la versión al final gracias al BOM)
-    implementation("io.github.jan-tennert.supabase:postgrest-kt") // Base de datos
-    implementation("io.github.jan-tennert.supabase:auth-kt")      // ¡FALTABA ESTE! (Login)
-    implementation("io.github.jan-tennert.supabase:realtime-kt")  // Opcional, pero útil para DispoAhora
+    implementation("io.github.jan-tennert.supabase:postgrest-kt")
+    implementation("io.github.jan-tennert.supabase:auth-kt")
+    implementation("io.github.jan-tennert.supabase:realtime-kt")
 
-    // 3. Motor HTTP de Ktor (¡OBLIGATORIO para que funcione en Android!)
     implementation("io.ktor:ktor-client-android:3.0.1")
 
-    // --- OTRAS DEPENDENCIAS ---
-
     // Serialización JSON
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3") // Actualizado a una versión más reciente compatible
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
     // Lifecycle Compose
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7") // Actualizado
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")       // Actualizado
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
 
     // Credential Manager (Para el Login con Google nativo)
     implementation("androidx.credentials:credentials:1.3.0")
@@ -104,4 +100,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.0")
 
     implementation("io.coil-kt:coil-compose:2.6.0")
+
+    implementation("com.mapbox.extension:maps-compose:11.4.1")
+    implementation("com.mapbox.maps:android:11.4.1")
 }

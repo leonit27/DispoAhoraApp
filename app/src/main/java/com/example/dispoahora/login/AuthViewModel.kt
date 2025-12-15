@@ -18,14 +18,14 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 
 sealed class AuthState {
-    object Loading : AuthState()
-    object SignedOut : AuthState()
+    object Loading: AuthState()
+    object SignedOut: AuthState()
 
-    data class SignedIn(val userName: String?, val avatarUrl: String?) : AuthState()
-    data class Error(val message: String) : AuthState()
+    data class SignedIn(val userName: String?, val avatarUrl: String?): AuthState()
+    data class Error(val message: String): AuthState()
 }
 
-class AuthViewModel : ViewModel() {
+class AuthViewModel: ViewModel() {
     private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
     val authState: StateFlow<AuthState> = _authState
 
@@ -129,6 +129,8 @@ class AuthViewModel : ViewModel() {
     fun signOut() {
         viewModelScope.launch {
             try {
+                /* Con esta función se borra el Access Token y el Refresh Token
+                   que están guardados en el móvil y "olvida" el usuario */
                 supabase.auth.signOut()
             } catch (e: Exception) {
                 _authState.value = AuthState.Error("Fallo al cerrar sesión: ${e.message}")
