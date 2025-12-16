@@ -63,6 +63,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.dispoahora.location.LocationService
 
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalView
+
 val PastelBlueTop = Color(0xFFD3E1F0)   // Azul muy pálido, casi blanco
 val PastelBlueBottom = Color(0xFFA0B8D7) // Azul lavanda suave
 val GradientBackground = Brush.verticalGradient(
@@ -102,7 +108,30 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ContactsMapCard() {
+fun Modifier.allowMapGestures(): Modifier {
+    val context = LocalView.current
+    return this.pointerInput(Unit) {
+        awaitEachGesture {
+            // 1. Esperar a que el dedo toque la pantalla (ACTION_DOWN)
+            // 'requireUnconsumed = false' es clave: detecta el toque aunque Mapbox también lo quiera.
+            awaitFirstDown(requireUnconsumed = false)
+
+            // 2. EN ESE INSTANTE, BLOQUEAR AL PADRE
+            // Esto busca al padre (el Scroll) y le dice "No interceptes nada"
+            context.parent?.requestDisallowInterceptTouchEvent(true)
+
+            // 3. Esperar a que el usuario levante el dedo o cancele
+            waitForUpOrCancellation()
+
+            // 4. DESBLOQUEAR AL PADRE
+            // Cuando levantas el dedo, el scroll vuelve a funcionar
+            context.parent?.requestDisallowInterceptTouchEvent(false)
+        }
+    }
+}
+
+@Composable
+fun ContactsMapCard(onMapInteraction: (Boolean) -> Unit = {}) {
     // Estado inicial de la cámara (Madrid por defecto, luego usaremos GPS real)
     val mapViewportState = rememberMapViewportState {
         setCameraOptions {
@@ -137,6 +166,7 @@ fun ContactsMapCard() {
                 .fillMaxWidth()
                 .height(250.dp) // Altura fija para el mapa
                 .clip(RoundedCornerShape(16.dp)) // Redondeamos el mapa para que quede bonito
+                .allowMapGestures()
         ) {
             MapboxMap(
                 modifier = Modifier.fillMaxSize(),
@@ -158,12 +188,13 @@ fun ContactsMapCard() {
 
 @Composable
 fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () -> Unit) {
+    var isMapInteracting by remember { mutableStateOf(false) }
     val locationViewModel: LocationViewModel = viewModel()
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 20.dp)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState(), enabled = !isMapInteracting)
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -176,13 +207,22 @@ fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () ->
                 Spacer(modifier = Modifier.height(20.dp))
                 QuickActivitySection()
                 Spacer(modifier = Modifier.height(20.dp))
-                ContactsMapCard()
+                ContactsMapCard(
+                    onMapInteraction = { isInteracting ->
+                        isMapInteracting = isInteracting
+                    }
+                )
                 Spacer(modifier = Modifier.height(20.dp))
             }
         }
 
 @Composable
-fun HeaderProfileSection(username: String?, avatarUrl: String? = null, onOpenProfile: () -> Unit, locationViewModel: LocationViewModel) {
+fun HeaderProfileSection(
+    username: String?,
+    avatarUrl: String? = null,
+    onOpenProfile: () -> Unit,
+    locationViewModel: LocationViewModel
+) {
     val context = androidx.compose.ui.platform.LocalContext.current
 
     val currentAddress by locationViewModel.currentAddress.collectAsState()
@@ -195,7 +235,6 @@ fun HeaderProfileSection(username: String?, avatarUrl: String? = null, onOpenPro
         contract = ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            // El usuario le dio a "ACEPTAR" -> Detectamos ubicación
             locationViewModel.detectLocation()
             showLocationDialog = false
         } else {
