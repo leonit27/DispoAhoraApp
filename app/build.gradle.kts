@@ -103,4 +103,7 @@ dependencies {
 
     implementation("com.mapbox.extension:maps-compose:11.4.1")
     implementation("com.mapbox.maps:android:11.4.1")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 }

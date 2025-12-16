@@ -45,11 +45,24 @@ import com.example.dispoahora.login.AuthViewModel
 import coil.compose.AsyncImage
 
 import androidx.compose.material3.Text
+import com.example.dispoahora.location.LocationViewModel
 import com.mapbox.common.MapboxOptions
 import com.mapbox.geojson.Point
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.maps.extension.compose.style.MapStyle
+
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.Manifest
+import android.app.Activity
+import androidx.activity.result.IntentSenderRequest
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.example.dispoahora.location.LocationService
+
 val PastelBlueTop = Color(0xFFD3E1F0)   // Azul muy pálido, casi blanco
 val PastelBlueBottom = Color(0xFFA0B8D7) // Azul lavanda suave
 val GradientBackground = Brush.verticalGradient(
@@ -145,6 +158,7 @@ fun ContactsMapCard() {
 
 @Composable
 fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () -> Unit) {
+    val locationViewModel: LocationViewModel = viewModel()
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -153,7 +167,7 @@ fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () ->
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
 
-                HeaderProfileSection(username, avatarUrl, onOpenProfile)
+                HeaderProfileSection(username, avatarUrl, onOpenProfile, locationViewModel)
 
                 Spacer(modifier = Modifier.height(24.dp))
                 AlertBanner()
@@ -168,7 +182,49 @@ fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () ->
         }
 
 @Composable
-fun HeaderProfileSection(username: String?, avatarUrl: String? = null, onOpenProfile: () -> Unit) {
+fun HeaderProfileSection(username: String?, avatarUrl: String? = null, onOpenProfile: () -> Unit, locationViewModel: LocationViewModel) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+
+    val currentAddress by locationViewModel.currentAddress.collectAsState()
+    val isLoading by locationViewModel.isLoading.collectAsState()
+    var showLocationDialog by remember { mutableStateOf(false) }
+
+    val locationService = remember { LocationService(context) }
+
+    val gpsSettingLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // El usuario le dio a "ACEPTAR" -> Detectamos ubicación
+            locationViewModel.detectLocation()
+            showLocationDialog = false
+        } else {
+            // El usuario le dio a "NO, GRACIAS" -> No hacemos nada o mostramos error
+        }
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val granted = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+
+        if (granted) {
+            // Si nos da permiso, AHORA chequeamos si el GPS está encendido
+            locationService.checkLocationSettings(
+                onEnabled = {
+                    locationViewModel.detectLocation()
+                    showLocationDialog = false
+                },
+                onDisabled = { exception ->
+                    // Lanzamos el diálogo del sistema
+                    val intentSenderRequest = IntentSenderRequest.Builder(exception.resolution).build()
+                    gpsSettingLauncher.launch(intentSenderRequest)
+                }
+            )
+        }
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -182,22 +238,40 @@ fun HeaderProfileSection(username: String?, avatarUrl: String? = null, onOpenPro
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(4.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { showLocationDialog = true } // Abre el diálogo
+                    .padding(vertical = 4.dp, horizontal = 2.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
-                    imageVector = Icons.Outlined.LocationOn,
-                    contentDescription = "Ubicación actual",
-                    tint = TextGrayLight,
+                    imageVector = Icons.Default.LocationOn,
+                    contentDescription = "Ubicación",
+                    tint = Color(0xFF6B7280),
                     modifier = Modifier.size(16.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "Castellón de la Plana",
-                    color = TextGrayLight,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                if (isLoading) {
+                    Text("Detectando...", fontSize = 14.sp, color = Color(0xFF6B7280))
+                    Spacer(modifier = Modifier.width(6.dp))
+                    CircularProgressIndicator(modifier = Modifier.size(12.dp), strokeWidth = 2.dp)
+                } else {
+                    Text(
+                        text = currentAddress,
+                        fontSize = 14.sp,
+                        color = Color(0xFF6B7280)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.KeyboardArrowDown,
+                        contentDescription = "Cambiar",
+                        tint = Color(0xFF6B7280),
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
         }
+
 
         Box(
             modifier = Modifier
@@ -224,6 +298,76 @@ fun HeaderProfileSection(username: String?, avatarUrl: String? = null, onOpenPro
             }
         }
     }
+
+    if (showLocationDialog) {
+        LocationSelectionDialog(
+            onDismiss = { showLocationDialog = false },
+            onAutoDetect = {
+                // Pedimos permisos. Si ya los tiene, el launcher ejecuta el callback inmediatamente.
+                permissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    )
+                )
+            },
+            onManualEntry = { text ->
+                locationViewModel.setManualLocation(text)
+                showLocationDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+fun LocationSelectionDialog(
+    onDismiss: () -> Unit,
+    onAutoDetect: () -> Unit,
+    onManualEntry: (String) -> Unit
+) {
+    var manualText by remember { mutableStateOf("") }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Cambiar ubicación") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                // Opción 1: Automática
+                Button(
+                    onClick = onAutoDetect,
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE0F2FE)) // Azul muy clarito
+                ) {
+                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color(0xFF0284C7))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Usar ubicación actual (GPS)", color = Color(0xFF0284C7))
+                }
+
+                Text("- O escribe una ciudad -", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.align(Alignment.CenterHorizontally))
+
+                // Opción 2: Manual
+                TextField(
+                    value = manualText,
+                    onValueChange = { manualText = it },
+                    placeholder = { Text("Ej: Madrid, Centro") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                if (manualText.isNotBlank()) onManualEntry(manualText)
+            }) {
+                Text("Establecer Manual")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
 }
 
 @Composable
@@ -461,59 +605,6 @@ fun ActivityChip(icon: ImageVector, text: String, isSelected: Boolean) {
         Icon(imageVector = icon, contentDescription = null, tint = contentColor, modifier = Modifier.size(18.dp))
         Spacer(modifier = Modifier.width(8.dp))
         Text(text = text, color = contentColor, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-    }
-}
-
-@Composable
-fun ContactsNearbySection() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(4.dp, RoundedCornerShape(24.dp), spotColor = Color(0xFF5B8DEF).copy(alpha = 0.1f))
-            .background(CardWhite.copy(alpha = 0.8f), RoundedCornerShape(24.dp))
-            .padding(20.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text("Contactos cerca", color = TextDark, fontWeight = FontWeight.Bold)
-                Text("Ves solo estado y zona aproximada", color = TextGrayLight, fontSize = 11.sp)
-            }
-            Column(horizontalAlignment = Alignment.End) {
-                Text("Sin mapas ni", color = TextGrayLight, fontSize = 11.sp)
-                Text("coordenadas exactas", color = TextGrayLight, fontSize = 11.sp)
-            }
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Contacto 1
-        ContactItem(
-            initial = "A",
-            name = "Ana",
-            activity = "Café • Hasta las 20:30",
-            status = "Libre",
-            distanceText = "Muy cerca",
-            distanceBg = Color(0xFFDCFCE7), // Fondo verde muy claro
-            distanceColor = StatusGreenText,
-            isOnline = true
-        )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Contacto 2
-        ContactItem(
-            initial = "L",
-            name = "Luis",
-            activity = "",
-            status = "Libre",
-            distanceText = "En tu zona",
-            distanceBg = Color(0xFFF3F4F6),
-            distanceColor = TextGrayLight,
-            isOnline = false
-        )
     }
 }
 

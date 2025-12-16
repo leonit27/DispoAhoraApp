@@ -48,21 +48,6 @@ fun DispoAhoraApp(authViewModel: AuthViewModel) {
     Scaffold(
         containerColor = Color.Transparent, // Transparente para ver el degradado global
 
-        // A) BARRA SUPERIOR (Solo se muestra en Perfil)
-        topBar = {
-            if (currentRoute == Screen.Profile.route) {
-                val user = (authState as? AuthState.SignedIn)?.userName ?: "Usuario"
-                Column(
-                    modifier = Modifier
-                        .statusBarsPadding()
-                        .padding(horizontal = 20.dp, vertical = 16.dp)
-                ) {
-                    ProfileHeader(
-                        username = user)
-                }
-            }
-        },
-
         // B) BARRA INFERIOR (Solo se muestra en Home)
         bottomBar = {
             if (currentRoute == Screen.Home.route) {
