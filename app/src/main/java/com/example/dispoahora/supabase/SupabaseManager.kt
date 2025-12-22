@@ -1,4 +1,4 @@
-package com.example.dispoahora.api
+package com.example.dispoahora.supabase
 
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
@@ -14,7 +14,4 @@ val supabase = createSupabaseClient(
 ) {
     install(Auth)
     install(Postgrest)
-
-    // Opcional: Habilita el módulo de Edge Functions si vas a llamar la función de Mapbox directamente
-    // install(Functions)
 }

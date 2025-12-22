@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.dispoahora.contacts.ContactsScreen
 import com.example.dispoahora.login.AuthState
 import com.example.dispoahora.login.AuthViewModel
 import com.example.dispoahora.login.LoginScreen
@@ -22,6 +23,7 @@ sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Home : Screen("home")
     object Profile : Screen("profile")
+    object Contacts: Screen("contacts")
 }
 
 @Composable
@@ -46,6 +48,7 @@ fun DispoAhoraApp(authViewModel: AuthViewModel) {
         bottomBar = {
             if (currentRoute == Screen.Home.route) {
                 CustomBottomBar(
+                    onContactsClick = { navController.navigate(Screen.Contacts.route) },
                     onProfileClick = { navController.navigate(Screen.Profile.route) }
                 )
             }
@@ -62,6 +65,10 @@ fun DispoAhoraApp(authViewModel: AuthViewModel) {
 
             composable(Screen.Login.route) {
                 LoginScreen(authViewModel)
+            }
+
+            composable(Screen.Contacts.route) {
+                ContactsScreen()
             }
 
             composable(Screen.Home.route) {

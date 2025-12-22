@@ -19,7 +19,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Settings
-import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -55,6 +54,7 @@ import com.mapbox.maps.extension.compose.style.MapStyle
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.activity.result.IntentSenderRequest
 import androidx.compose.runtime.collectAsState
@@ -144,36 +144,30 @@ fun ContactsMapCard(onMapInteraction: (Boolean) -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            // Estilo idéntico a tus otras Cards
             .shadow(4.dp, RoundedCornerShape(24.dp), spotColor = Color(0xFF5B8DEF).copy(alpha = 0.1f))
             .background(Color.White.copy(alpha = 0.8f), RoundedCornerShape(24.dp))
-            .padding(16.dp) // Padding interno de la tarjeta
+            .padding(16.dp)
     ) {
-        // --- Título de la Sección ---
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-            horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Column {
                 Text("Contactos cerca", color = Color(0xFF1F2937), fontWeight = FontWeight.Bold)
                 Text("Explora quién está libre a tu alrededor", color = Color(0xFF6B7280), fontSize = 11.sp)
             }
         }
-
-        // --- El Mapa ---
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(250.dp) // Altura fija para el mapa
-                .clip(RoundedCornerShape(16.dp)) // Redondeamos el mapa para que quede bonito
+                .height(250.dp)
+                .clip(RoundedCornerShape(16.dp))
                 .allowMapGestures()
         ) {
             MapboxMap(
                 modifier = Modifier.fillMaxSize(),
                 mapViewportState = mapViewportState,
                 style = {
-                    // Usamos el estilo Light porque combina mejor con tu app pastel
-                    // También puedes usar: MapboxStandardStyle.LIGHT
                     MapStyle(style = "mapbox://styles/mapbox/light-v11")
                 }
             ) {
@@ -186,35 +180,35 @@ fun ContactsMapCard(onMapInteraction: (Boolean) -> Unit = {}) {
     }
 }
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () -> Unit) {
     var isMapInteracting by remember { mutableStateOf(false) }
     val locationViewModel: LocationViewModel = viewModel()
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp)
-                    .verticalScroll(rememberScrollState(), enabled = !isMapInteracting)
-            ) {
-                Spacer(modifier = Modifier.height(24.dp))
 
-                HeaderProfileSection(username, avatarUrl, onOpenProfile, locationViewModel)
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 20.dp)
+            .verticalScroll(rememberScrollState(), enabled = !isMapInteracting)
+    ) {
+        Spacer(modifier = Modifier.height(24.dp))
 
-                Spacer(modifier = Modifier.height(24.dp))
-                AlertBanner()
-                Spacer(modifier = Modifier.height(20.dp))
-                MainStatusCard()
-                Spacer(modifier = Modifier.height(20.dp))
-                QuickActivitySection()
-                Spacer(modifier = Modifier.height(20.dp))
-                ContactsMapCard(
-                    onMapInteraction = { isInteracting ->
-                        isMapInteracting = isInteracting
-                    }
-                )
-                Spacer(modifier = Modifier.height(20.dp))
+        HeaderProfileSection(username, avatarUrl, onOpenProfile, locationViewModel)
+
+        Spacer(modifier = Modifier.height(20.dp))
+        MainStatusCard()
+        Spacer(modifier = Modifier.height(20.dp))
+        QuickActivitySection()
+        Spacer(modifier = Modifier.height(20.dp))
+        ContactsMapCard(
+            onMapInteraction = { isInteracting ->
+                isMapInteracting = isInteracting
             }
-        }
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+    }
+}
 
 @Composable
 fun HeaderProfileSection(
@@ -410,47 +404,6 @@ fun LocationSelectionDialog(
 }
 
 @Composable
-fun AlertBanner() {
-    // La alerta se mantiene oscura para destacar sobre el fondo pastel, tal como en la imagen de referencia
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(8.dp, RoundedCornerShape(20.dp), spotColor = Color.Black.copy(alpha = 0.1f))
-            .background(DarkAlertBg, RoundedCornerShape(20.dp))
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-            // Icono rayo
-            Box(
-                modifier = Modifier
-                    .size(28.dp)
-                    .background(Color.Gray.copy(alpha = 0.3f), CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.Add, contentDescription = null, tint = Color(0xFFFFD700), modifier = Modifier.size(18.dp))
-            }
-            Spacer(modifier = Modifier.width(12.dp))
-            Text(
-                text = "¡Estás cerca y Ana también está libre!",
-                color = Color.White,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Medium,
-                lineHeight = 16.sp
-            )
-        }
-        Text(
-            text = "Ir al chat",
-            color = Color(0xFF60A5FA), // Azul claro brillante
-            fontWeight = FontWeight.Bold,
-            fontSize = 12.sp,
-            modifier = Modifier.padding(start = 8.dp)
-        )
-    }
-}
-
-@Composable
 fun MainStatusCard() {
     Column(
         modifier = Modifier
@@ -591,7 +544,6 @@ fun QuickActivitySection() {
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                // Café seleccionado (Azul)
                 ActivityChip(icon = Icons.Default.ShoppingCart, text = "Café", isSelected = true)
             }
             items(listOf("Deporte", "Cena", "Chat")) { activity ->
@@ -601,7 +553,6 @@ fun QuickActivitySection() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Scrollbar visual gris clara
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -616,21 +567,11 @@ fun QuickActivitySection() {
                     .background(Color(0xFF9CA3AF), RoundedCornerShape(2.dp))
             )
         }
-
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = "Solo verán este estado las personas que tú eliges.",
-            color = TextGrayLight,
-            fontSize = 11.sp,
-            modifier = Modifier.padding(horizontal = 20.dp)
-        )
     }
 }
 
 @Composable
 fun ActivityChip(icon: ImageVector, text: String, isSelected: Boolean) {
-    // Si está seleccionado: Fondo Azul, Texto Blanco
-    // Si no: Fondo Gris muy claro, Texto Gris oscuro
     val bgColor = if (isSelected) AccentBlue else Color(0xFFF3F4F6)
     val contentColor = if (isSelected) Color.White else TextDark
 
@@ -720,9 +661,9 @@ fun ContactItem(
 
 @Composable
 fun CustomBottomBar(
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    onContactsClick: () -> Unit = {}
 ) {
-    // Barra flotante con esquinas redondeadas, fondo blanco
     Box(
         modifier = Modifier
             .padding(horizontal = 20.dp, vertical = 20.dp)
@@ -744,7 +685,7 @@ fun CustomBottomBar(
             }
 
             // Item 2: Contactos
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onContactsClick() }) {
                 Icon(Icons.Outlined.Person, contentDescription = null, tint = TextGrayLight, modifier = Modifier.size(24.dp))
                 Spacer(modifier = Modifier.height(2.dp))
                 Text("Contactos", color = TextGrayLight, fontSize = 10.sp)

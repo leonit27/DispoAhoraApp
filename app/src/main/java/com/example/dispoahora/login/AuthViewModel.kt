@@ -2,7 +2,7 @@ package com.example.dispoahora.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.dispoahora.api.supabase
+import com.example.dispoahora.supabase.supabase
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.user.UserInfo

@@ -111,10 +111,6 @@ fun LoginScreen(
     }
 }
 
-/**
- * Función auxiliar que maneja la lógica del Credential Manager de Android
- * y pasa el token resultante al AuthViewModel.
- */
 private fun performGoogleSignIn(
     context: Context,
     scope: kotlinx.coroutines.CoroutineScope,
