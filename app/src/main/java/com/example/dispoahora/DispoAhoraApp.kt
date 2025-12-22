@@ -1,16 +1,13 @@
 package com.example.dispoahora
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -18,7 +15,6 @@ import androidx.navigation.compose.rememberNavController
 import com.example.dispoahora.login.AuthState
 import com.example.dispoahora.login.AuthViewModel
 import com.example.dispoahora.login.LoginScreen
-import com.example.dispoahora.login.ProfileHeader
 import com.example.dispoahora.login.ProfileScreen
 
 // 1. Definimos las rutas (Nombres de las pantallas)
@@ -44,11 +40,9 @@ fun DispoAhoraApp(authViewModel: AuthViewModel) {
     // Nota: Esto es una lógica simple. Si authState es Loading, podrías mostrar un spinner.
     val startDestination = if (authState is AuthState.SignedIn) Screen.Home.route else Screen.Login.route
 
-    // --- ÚNICO SCAFFOLD DE LA APP ---
     Scaffold(
-        containerColor = Color.Transparent, // Transparente para ver el degradado global
+        containerColor = Color.Transparent,
 
-        // B) BARRA INFERIOR (Solo se muestra en Home)
         bottomBar = {
             if (currentRoute == Screen.Home.route) {
                 CustomBottomBar(
@@ -58,21 +52,18 @@ fun DispoAhoraApp(authViewModel: AuthViewModel) {
         }
     ) { paddingValues ->
 
-        // 6. NAV HOST: El área que cambia de contenido
         NavHost(
             navController = navController,
             startDestination = startDestination,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues) // El Scaffold nos dice cuánto espacio dejar para las barras
+                .padding(paddingValues)
         ) {
 
-            // RUTA: LOGIN
             composable(Screen.Login.route) {
                 LoginScreen(authViewModel)
             }
 
-            // RUTA: HOME
             composable(Screen.Home.route) {
                 val user = (authState as? AuthState.SignedIn)?.userName ?: "Usuario"
                 val avatar = (authState as? AuthState.SignedIn)?.avatarUrl
@@ -83,17 +74,15 @@ fun DispoAhoraApp(authViewModel: AuthViewModel) {
                 )
             }
 
-            // RUTA: PERFIL
             composable(Screen.Profile.route) {
                 val user = (authState as? AuthState.SignedIn)?.userName ?: "Usuario"
-                val email = "usuario@ejemplo.com" // Aquí pondrías el email real si lo tienes
+                val email = "usuario@ejemplo.com"
 
                 ProfileScreen(
                     username = user,
                     email = email,
                     onSignOut = {
                         authViewModel.signOut()
-                        // Navegar al Login y borrar el historial para que no pueda volver atrás
                         navController.navigate(Screen.Login.route) {
                             popUpTo(0) { inclusive = true }
                         }
