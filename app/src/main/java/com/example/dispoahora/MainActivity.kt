@@ -400,6 +400,14 @@ fun LocationSelectionDialog(
 
 @Composable
 fun MainStatusCard() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("TU ESTADO AHORA", color = TextGrayLight, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -408,22 +416,14 @@ fun MainStatusCard() {
             .padding(24.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .background(Color(0xFFEFF6FF), RoundedCornerShape(20.dp))
+                .padding(horizontal = 10.dp, vertical = 4.dp)
         ) {
-            Text("TU ESTADO AHORA", color = TextGrayLight, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .background(Color(0xFFEFF6FF), RoundedCornerShape(20.dp))
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
-            ) {
-                Box(modifier = Modifier.size(6.dp).background(AccentBlue, CircleShape))
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("Visible solo por 1 hora", color = AccentBlue, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
-            }
+            Box(modifier = Modifier.size(6.dp).background(AccentBlue, CircleShape))
+            Spacer(modifier = Modifier.width(6.dp))
+            Text("Visible solo por 1 hora", color = AccentBlue, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
         }
 
         Spacer(modifier = Modifier.height(24.dp))

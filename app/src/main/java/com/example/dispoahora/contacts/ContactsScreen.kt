@@ -139,7 +139,6 @@ fun ContactGroupCard(
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Cabecera de la sección (fuera de la card para limpieza visual)
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp, start = 4.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -151,13 +150,12 @@ fun ContactGroupCard(
             Text(count, fontSize = 12.sp, color = TextGray)
         }
 
-        // LA CARD CONTENEDORA (Estilo DispoAhora)
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .shadow(4.dp, RoundedCornerShape(24.dp), spotColor = Color(0xFF5B8DEF).copy(alpha = 0.1f))
                 .background(CardBackground, RoundedCornerShape(24.dp))
-                .padding(vertical = 8.dp) // Padding vertical interno
+                .padding(vertical = 8.dp)
         ) {
             contacts.forEachIndexed { index, contact ->
                 ContactItemRow(contact)
