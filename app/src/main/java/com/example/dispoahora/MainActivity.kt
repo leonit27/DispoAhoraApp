@@ -1,13 +1,11 @@
+@file:Suppress("COMPOSE_APPLIER_CALL_MISMATCH")
+
 package com.example.dispoahora
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Canvas
-import androidx.compose.animation.core.*
-import androidx.compose.ui.draw.rotate
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -27,8 +25,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -87,6 +83,7 @@ import kotlinx.coroutines.launch
 import java.time.temporal.ChronoUnit
 
 import com.example.dispoahora.utils.*
+import com.mapbox.maps.MapboxExperimental
 
 val PastelBlueTop = Color(0xFFD3E1F0)   // Azul muy pálido, casi blanco
 val PastelBlueBottom = Color(0xFFA0B8D7) // Azul lavanda suave
@@ -102,8 +99,6 @@ val AccentBlue = Color(0xFF5B8DEF) // Azul para botones activos (como Café)
 val StatusGreenRing = Color(0xFF86EFAC) // Verde pastel brillante para el anillo
 
 val StatusRedRing = Color(0xFFE92C2C)
-val StatusGreenText = Color(0xFF10B981)
-val DarkAlertBg = Color(0xFF282B46) // Mantenemos la alerta oscura para contraste
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -151,8 +146,9 @@ fun Modifier.allowMapGestures(): Modifier {
     }
 }
 
+@OptIn(MapboxExperimental::class)
 @Composable
-fun ContactsMapCard(onMapInteraction: (Boolean) -> Unit = {}) {
+fun ContactsMapCard() {
     // Estado inicial de la cámara (Madrid por defecto, luego usaremos GPS real)
     val mapViewportState = rememberMapViewportState {
         setCameraOptions {
@@ -225,11 +221,7 @@ fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () ->
         Spacer(modifier = Modifier.height(20.dp))
         QuickActivitySection()
         Spacer(modifier = Modifier.height(20.dp))
-        ContactsMapCard(
-            onMapInteraction = { isInteracting ->
-                isMapInteracting = isInteracting
-            }
-        )
+        ContactsMapCard()
         Spacer(modifier = Modifier.height(20.dp))
     }
 }
@@ -255,7 +247,6 @@ fun HeaderProfileSection(
         if (result.resultCode == Activity.RESULT_OK) {
             locationViewModel.detectLocation()
             showLocationDialog = false
-        } else {
         }
     }
 
@@ -355,7 +346,7 @@ fun HeaderProfileSection(
 
     if (showLocationDialog) {
         LocationSelectionDialog(
-            onDismiss = { showLocationDialog = false },
+            onDismiss = {},
             onAutoDetect = {
                 permissionLauncher.launch(
                     arrayOf(
@@ -366,7 +357,6 @@ fun HeaderProfileSection(
             },
             onManualEntry = { text ->
                 locationViewModel.setManualLocation(text)
-                showLocationDialog = false
             }
         )
     }
@@ -534,7 +524,7 @@ fun MainStatusCard(
                             if (newState) {
                                 // CASO: SE PONE LIBRE
                                 // Calculamos la hora: Ahora + 1 hora
-                                val newExpiryTime = java.time.Instant.now()
+                                val newExpiryTime = Instant.now()
                                     .plus(1, ChronoUnit.HOURS)
                                     .toString()
 
@@ -620,7 +610,7 @@ fun CountdownDisplay(
                 }
                 delay(1000L)
             }
-        } catch (e: DateTimeParseException) {
+        } catch (_: DateTimeParseException) {
             timeLeft = "Error fecha"
         }
     }
