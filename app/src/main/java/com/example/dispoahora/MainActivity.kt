@@ -70,8 +70,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.text.style.LineHeightStyle
 import com.example.dispoahora.contacts.TextGray
+
+import androidx.compose.runtime.*
+import kotlinx.coroutines.delay
+import java.time.Instant
+import java.time.Duration
+import java.time.format.DateTimeParseException
+
+import androidx.compose.runtime.rememberCoroutineScope
+import com.example.dispoahora.supabase.supabase
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.postgrest.from // Asegúrate de tener los imports de Supabase
+import kotlinx.coroutines.launch
+import java.time.temporal.ChronoUnit
 
 val PastelBlueTop = Color(0xFFD3E1F0)   // Azul muy pálido, casi blanco
 val PastelBlueBottom = Color(0xFFA0B8D7) // Azul lavanda suave
@@ -192,6 +204,9 @@ fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () ->
     var isMapInteracting by remember { mutableStateOf(false) }
     val locationViewModel: LocationViewModel = viewModel()
 
+    val currentUser = remember { supabase.auth.currentUserOrNull() }
+    val myUserId = currentUser?.id ?: ""
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -203,7 +218,7 @@ fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () ->
         HeaderProfileSection(username, avatarUrl, onOpenProfile, locationViewModel)
 
         Spacer(modifier = Modifier.height(20.dp))
-        MainStatusCard()
+        MainStatusCard(myUserId = myUserId)
         Spacer(modifier = Modifier.height(20.dp))
         QuickActivitySection()
         Spacer(modifier = Modifier.height(20.dp))
@@ -404,12 +419,59 @@ fun LocationSelectionDialog(
 }
 
 @Composable
-fun MainStatusCard() {
+fun MainStatusCard(
+    myUserId: String
+) {
     var isLibre by remember { mutableStateOf(true) }
-    var textLibreOcupado: String
+    var expiresAt by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+    val scope = rememberCoroutineScope()
 
-    if (isLibre) textLibreOcupado = "Ocupado"
-    else textLibreOcupado = "Libre"
+    val textLibreOcupado = if (isLibre) "Ocupado" else "Libre"
+
+    LaunchedEffect(myUserId) {
+        if (myUserId.isNotBlank()) {
+            try {
+                // Consultamos el perfil del usuario
+                val profile = supabase.from("profiles")
+                    .select {
+                        filter { eq("id", myUserId) }
+                    }.decodeSingle<Map<String, String?>>() // O tu data class si tienes una
+
+                // Actualizamos la UI con lo que hay en la BD
+                val statusEnBD = profile["status"]
+                val expiryEnBD = profile["status_expires_at"]
+
+                // Lógica de validación: ¿Ha caducado ya mientras la app estaba cerrada?
+                if (statusEnBD == "Libre" && expiryEnBD != null) {
+                    val ahora = java.time.Instant.now()
+                    val expiracion = java.time.Instant.parse(expiryEnBD)
+
+                    if (expiracion.isAfter(ahora)) {
+                        isLibre = true
+                        expiresAt = expiryEnBD
+                    } else {
+                        // Si ya caducó, podrías limpiar la BD aquí mismo
+                        isLibre = false
+                        expiresAt = null
+                    }
+                } else {
+                    isLibre = statusEnBD == "Libre"
+                    expiresAt = expiryEnBD
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("DISPO_LOAD", "Error cargando estado: ${e.message}")
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    // 3. Si está cargando, podemos mostrar un esqueleto o nada
+    if (isLoading) {
+        // Puedes poner un CircularProgressIndicator() o dejarlo vacío
+        return
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp, start = 4.dp),
@@ -435,7 +497,15 @@ fun MainStatusCard() {
         ) {
             Box(modifier = Modifier.size(6.dp).background(AccentBlue, CircleShape))
             Spacer(modifier = Modifier.width(6.dp))
-            Text("Visible solo por 1 hora", color = AccentBlue, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+
+            if (isLibre && expiresAt != null) {
+                CountdownDisplay(
+                    expirationString = expiresAt!!,
+                    color = AccentBlue
+                )
+            } else {
+                Text("Visible solo por 1 hora", color = AccentBlue, fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -457,7 +527,62 @@ fun MainStatusCard() {
             StatusRingButton(
                 isLibre = isLibre,
                 onToggle = {
-                    isLibre = !isLibre
+                    val newState = !isLibre
+                    isLibre = newState // 1. Actualizamos UI visualmente al instante (Optimistic UI)
+
+                    scope.launch {
+                        android.util.Log.d("DISPO_DEBUG", "Intentando actualizar. ID Usuario: '$myUserId'")
+
+                        try {
+                            if (newState) {
+                                // CASO: SE PONE LIBRE
+                                // Calculamos la hora: Ahora + 1 hora
+                                val newExpiryTime = java.time.Instant.now()
+                                    .plus(1, ChronoUnit.HOURS)
+                                    .toString()
+
+                                expiresAt = newExpiryTime // Actualizamos local
+
+                                android.util.Log.d("DISPO_DEBUG", "Enviando estado LIBRE hasta: $newExpiryTime")
+
+                                // GUARDAMOS EN SUPABASE
+                                supabase.from("profiles").update(
+                                    mapOf(
+                                        "status" to "Libre",
+                                        "status_expires_at" to newExpiryTime
+                                    )
+                                ) {
+                                    filter {
+                                        eq("id", myUserId) // Solo actualiza MI usuario
+                                    }
+                                }
+
+                            } else {
+                                // CASO: SE PONE OCUPADO
+                                expiresAt = null // Borramos local
+                                android.util.Log.d("DISPO_DEBUG", "Enviando estado OCUPADO")
+
+                                // GUARDAMOS EN SUPABASE
+                                supabase.from("profiles").update(
+                                    mapOf(
+                                        "status" to "Ocupado",
+                                        "status_expires_at" to null // Borramos fecha en BD
+                                    )
+                                ) {
+                                    filter {
+                                        eq("id", myUserId)
+                                    }
+                                }
+
+                            }
+                            android.util.Log.d("DISPO_DEBUG", "¡Actualización ÉXITOSA en Supabase!")
+                        } catch (e: Exception) {
+                            // Si falla internet, aquí podrías revertir el estado visual
+                            android.util.Log.e("DISPO_ERROR", "Error al actualizar: ${e.message}")
+                            e.printStackTrace()
+                            isLibre = !newState // Revertir cambio si falló
+                        }
+                    }
                 }
             )
         }
@@ -471,6 +596,45 @@ fun MainStatusCard() {
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
     }
+}
+
+@Composable
+fun CountdownDisplay(
+    expirationString: String,
+    color: Color
+) {
+    var timeLeft by remember { mutableStateOf("Calculando...") }
+
+    // Se recalcula cada vez que cambia la fecha de expiración
+    LaunchedEffect(expirationString) {
+        try {
+            val expiresAt = Instant.parse(expirationString)
+            while (true) {
+                val now = Instant.now()
+                val diff = Duration.between(now, expiresAt)
+
+                if (diff.isNegative || diff.isZero) {
+                    timeLeft = "00:00:00"
+                    break
+                } else {
+                    val hours = diff.toHours()
+                    val minutes = diff.toMinutesPart()
+                    val seconds = diff.toSecondsPart()
+                    timeLeft = String.format("%02d:%02d:%02d", hours, minutes, seconds)
+                }
+                delay(1000L) // Actualiza cada segundo
+            }
+        } catch (e: DateTimeParseException) {
+            timeLeft = "Error fecha"
+        }
+    }
+
+    Text(
+        text = "Libre por: $timeLeft",
+        color = color,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.SemiBold
+    )
 }
 
 @Composable
