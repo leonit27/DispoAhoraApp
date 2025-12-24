@@ -66,6 +66,7 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material.icons.outlined.Home
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -84,6 +85,8 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from // Asegúrate de tener los imports de Supabase
 import kotlinx.coroutines.launch
 import java.time.temporal.ChronoUnit
+
+import com.example.dispoahora.utils.*
 
 val PastelBlueTop = Color(0xFFD3E1F0)   // Azul muy pálido, casi blanco
 val PastelBlueBottom = Color(0xFFA0B8D7) // Azul lavanda suave
@@ -432,26 +435,22 @@ fun MainStatusCard(
     LaunchedEffect(myUserId) {
         if (myUserId.isNotBlank()) {
             try {
-                // Consultamos el perfil del usuario
                 val profile = supabase.from("profiles")
                     .select {
                         filter { eq("id", myUserId) }
-                    }.decodeSingle<Map<String, String?>>() // O tu data class si tienes una
+                    }.decodeSingle<Map<String, String?>>()
 
-                // Actualizamos la UI con lo que hay en la BD
                 val statusEnBD = profile["status"]
                 val expiryEnBD = profile["status_expires_at"]
 
-                // Lógica de validación: ¿Ha caducado ya mientras la app estaba cerrada?
                 if (statusEnBD == "Libre" && expiryEnBD != null) {
-                    val ahora = java.time.Instant.now()
-                    val expiracion = java.time.Instant.parse(expiryEnBD)
+                    val ahora = Instant.now()
+                    val expiracion = Instant.parse(expiryEnBD)
 
                     if (expiracion.isAfter(ahora)) {
                         isLibre = true
                         expiresAt = expiryEnBD
                     } else {
-                        // Si ya caducó, podrías limpiar la BD aquí mismo
                         isLibre = false
                         expiresAt = null
                     }
@@ -467,9 +466,7 @@ fun MainStatusCard(
         }
     }
 
-    // 3. Si está cargando, podemos mostrar un esqueleto o nada
     if (isLoading) {
-        // Puedes poner un CircularProgressIndicator() o dejarlo vacío
         return
     }
 
@@ -605,7 +602,6 @@ fun CountdownDisplay(
 ) {
     var timeLeft by remember { mutableStateOf("Calculando...") }
 
-    // Se recalcula cada vez que cambia la fecha de expiración
     LaunchedEffect(expirationString) {
         try {
             val expiresAt = Instant.parse(expirationString)
@@ -622,7 +618,7 @@ fun CountdownDisplay(
                     val seconds = diff.toSecondsPart()
                     timeLeft = String.format("%02d:%02d:%02d", hours, minutes, seconds)
                 }
-                delay(1000L) // Actualiza cada segundo
+                delay(1000L)
             }
         } catch (e: DateTimeParseException) {
             timeLeft = "Error fecha"
@@ -635,71 +631,6 @@ fun CountdownDisplay(
         fontSize = 11.sp,
         fontWeight = FontWeight.SemiBold
     )
-}
-
-@Composable
-fun StatusRingButton(
-    isLibre: Boolean,
-    onToggle: () -> Unit
-) {
-    val infiniteTransition = rememberInfiniteTransition(label = "anillo_animacion")
-    val angle by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 3000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "angulo_rotacion"
-    )
-
-    val primaryColor = if (isLibre) StatusGreenRing else StatusRedRing
-    val secondaryColor = if (isLibre) Color(0xFF3B82F6) else Color(0xFFF6A3FF)
-
-    val statusText = if (isLibre) "Libre" else "Ocupado"
-    val statusFontSize = if (isLibre) 15.sp else 10.sp
-
-    Box(contentAlignment = Alignment.Center) {
-
-        Canvas(
-            modifier = Modifier
-                .size(90.dp)
-                .rotate(angle)
-        ) {
-            val brush = Brush.sweepGradient(
-                colors = listOf(primaryColor, secondaryColor, primaryColor)
-            )
-            drawCircle(
-                brush = brush,
-                style = Stroke(width = 10.dp.toPx(), cap = StrokeCap.Round)
-            )
-        }
-
-        Box(
-            modifier = Modifier
-                .size(70.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF0F172A))
-                .border(1.dp, Color.White.copy(alpha = 0.1f), CircleShape)
-                .clickable { onToggle() },
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "ESTADO",
-                    color = Color(0xFF94A3B8),
-                    fontSize = 9.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = statusText,
-                    color = Color.White,
-                    fontSize = statusFontSize,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-    }
 }
 
 @Composable
@@ -774,77 +705,6 @@ fun ActivityChip(icon: ImageVector, text: String, isSelected: Boolean) {
 }
 
 @Composable
-fun ContactItem(
-    initial: String,
-    name: String,
-    activity: String,
-    status: String,
-    distanceText: String,
-    distanceBg: Color,
-    distanceColor: Color,
-    isOnline: Boolean
-) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box {
-            Box(
-                modifier = Modifier
-                    .size(44.dp)
-                    .background(Color(0xFFDBEAFE), CircleShape), // Fondo avatar azul claro
-                contentAlignment = Alignment.Center
-            ) {
-                Text(initial, fontWeight = FontWeight.Bold, color = AccentBlue)
-            }
-            if (isOnline) {
-                Box(
-                    modifier = Modifier
-                        .size(12.dp)
-                        .background(AccentBlue, CircleShape) // Punto azul para indicar online
-                        .border(2.dp, CardWhite, CircleShape)
-                        .align(Alignment.BottomEnd)
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(name, color = TextDark, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.width(8.dp))
-                // Tag Libre
-                Box(
-                    modifier = Modifier
-                        .background(Color(0xFFDCFCE7), RoundedCornerShape(4.dp))
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                    Text(status, color = StatusGreenText, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                }
-            }
-            if (activity.isNotEmpty()) {
-                Text(activity, color = TextGrayLight, fontSize = 12.sp)
-            }
-        }
-
-        // Chip de Distancia
-        Box(
-            modifier = Modifier
-                .background(distanceBg, RoundedCornerShape(8.dp))
-                .padding(horizontal = 10.dp, vertical = 6.dp)
-        ) {
-            Column(horizontalAlignment = Alignment.End) {
-                Text(distanceText, color = distanceColor, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                if(isOnline) {
-                    Text("En tu misma zona", color = TextGrayLight, fontSize = 8.sp)
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun CustomBottomBar(
     onProfileClick: () -> Unit = {},
     onContactsClick: () -> Unit = {}
@@ -862,21 +722,18 @@ fun CustomBottomBar(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Item 1: Estado (Activo)
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Box(modifier = Modifier.size(6.dp).background(AccentBlue, CircleShape))
+                Icon(Icons.Outlined.Home, contentDescription = null, tint = TextGrayLight, modifier = Modifier.size(24.dp))
                 Spacer(modifier = Modifier.height(4.dp))
                 Text("Estado", color = AccentBlue, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
 
-            // Item 2: Contactos
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onContactsClick() }) {
                 Icon(Icons.Outlined.Person, contentDescription = null, tint = TextGrayLight, modifier = Modifier.size(24.dp))
                 Spacer(modifier = Modifier.height(2.dp))
                 Text("Contactos", color = TextGrayLight, fontSize = 10.sp)
             }
 
-            // Item 3: Ajustes (Nuevo)
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onProfileClick() }) {
                 Icon(Icons.Outlined.Settings, contentDescription = null, tint = TextGrayLight, modifier = Modifier.size(24.dp))
                 Spacer(modifier = Modifier.height(2.dp))

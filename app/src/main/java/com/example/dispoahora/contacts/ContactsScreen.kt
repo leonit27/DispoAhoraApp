@@ -159,7 +159,6 @@ fun ContactGroupCard(
         ) {
             contacts.forEachIndexed { index, contact ->
                 ContactItemRow(contact)
-                // Separador sutil si no es el último
                 if (index < contacts.lastIndex) {
                     Divider(
                         color = Color.Gray.copy(alpha = 0.1f),
