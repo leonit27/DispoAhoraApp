@@ -1,7 +1,6 @@
 package com.example.dispoahora.login
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -118,49 +117,37 @@ private fun performGoogleSignIn(
 ) {
     val credentialManager = CredentialManager.create(context)
 
-    // 1. Generar Nonce y hashearlo (Requisito de seguridad de Supabase + Google)
-    // Supabase necesita el 'rawNonce' y Google necesita el 'hashedNonce'.
     val rawNonce = UUID.randomUUID().toString()
     val bytes = rawNonce.toByteArray()
     val md = MessageDigest.getInstance("SHA-256")
     val digest = md.digest(bytes)
     val hashedNonce = digest.fold("") { str, it -> str + "%02x".format(it) }
 
-    // 2. Configurar la petición de Google ID
     val googleIdOption = GetGoogleIdOption.Builder()
-        .setFilterByAuthorizedAccounts(false) // false para permitir elegir cualquier cuenta
-        .setServerClientId(WEB_GOOGLE_CLIENT_ID) // Usar el ID de Cliente Web
+        .setFilterByAuthorizedAccounts(false)
+        .setServerClientId(WEB_GOOGLE_CLIENT_ID)
         .setNonce(hashedNonce)
         .build()
 
-    // 3. Crear la solicitud de credenciales
     val request = GetCredentialRequest.Builder()
         .addCredentialOption(googleIdOption)
         .build()
 
     scope.launch {
         try {
-            // 4. Lanzar el selector de cuentas nativo de Android
             val result = credentialManager.getCredential(
                 request = request,
                 context = context,
             )
 
-            // 5. Procesar la credencial recibida
             val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(result.credential.data)
             val googleIdToken = googleIdTokenCredential.idToken
 
-            // 6. Enviar el token y el nonce crudo a Supabase para iniciar sesión
-            Log.d("Login", "Google ID Token recibido. Iniciando sesión en Supabase...")
             viewModel.signInWithGoogleIdToken(googleIdToken, rawNonce)
 
-        } catch (e: GetCredentialException) {
-            Log.e("Login", "Error en Credential Manager: ${e.message}")
-            // Aquí podrías mostrar un Snackbar o Toast al usuario si falla
-        } catch (e: GoogleIdTokenParsingException) {
-            Log.e("Login", "Error al parsear el token de Google: ${e.message}")
-        } catch (e: Exception) {
-            Log.e("Login", "Error desconocido durante el login: ${e.message}")
+        } catch (_: GetCredentialException) {
+        } catch (_: GoogleIdTokenParsingException) {
+        } catch (_: Exception) {
         }
     }
 }
