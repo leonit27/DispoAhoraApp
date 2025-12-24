@@ -67,6 +67,7 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 
 val PastelBlueTop = Color(0xFFD3E1F0)   // Azul muy pálido, casi blanco
@@ -217,7 +218,7 @@ fun HeaderProfileSection(
     onOpenProfile: () -> Unit,
     locationViewModel: LocationViewModel
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
 
     val currentAddress by locationViewModel.currentAddress.collectAsState()
     val isLoading by locationViewModel.isLoading.collectAsState()
@@ -232,7 +233,6 @@ fun HeaderProfileSection(
             locationViewModel.detectLocation()
             showLocationDialog = false
         } else {
-            // El usuario le dio a "NO, GRACIAS" -> No hacemos nada o mostramos error
         }
     }
 
@@ -243,14 +243,12 @@ fun HeaderProfileSection(
                 permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
 
         if (granted) {
-            // Si nos da permiso, AHORA chequeamos si el GPS está encendido
             locationService.checkLocationSettings(
                 onEnabled = {
                     locationViewModel.detectLocation()
                     showLocationDialog = false
                 },
                 onDisabled = { exception ->
-                    // Lanzamos el diálogo del sistema
                     val intentSenderRequest = IntentSenderRequest.Builder(exception.resolution).build()
                     gpsSettingLauncher.launch(intentSenderRequest)
                 }
@@ -274,7 +272,7 @@ fun HeaderProfileSection(
             Row(
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .clickable { showLocationDialog = true } // Abre el diálogo
+                    .clickable { showLocationDialog = true }
                     .padding(vertical = 4.dp, horizontal = 2.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -336,7 +334,6 @@ fun HeaderProfileSection(
         LocationSelectionDialog(
             onDismiss = { showLocationDialog = false },
             onAutoDetect = {
-                // Pedimos permisos. Si ya los tiene, el launcher ejecuta el callback inmediatamente.
                 permissionLauncher.launch(
                     arrayOf(
                         Manifest.permission.ACCESS_FINE_LOCATION,
@@ -365,11 +362,10 @@ fun LocationSelectionDialog(
         title = { Text("Cambiar ubicación") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                // Opción 1: Automática
                 Button(
                     onClick = onAutoDetect,
                     modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE0F2FE)) // Azul muy clarito
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE0F2FE))
                 ) {
                     Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color(0xFF0284C7))
                     Spacer(Modifier.width(8.dp))
@@ -378,11 +374,10 @@ fun LocationSelectionDialog(
 
                 Text("- O escribe una ciudad -", fontSize = 12.sp, color = Color.Gray, modifier = Modifier.align(Alignment.CenterHorizontally))
 
-                // Opción 2: Manual
                 TextField(
                     value = manualText,
                     onValueChange = { manualText = it },
-                    placeholder = { Text("Ej: Madrid, Centro") },
+                    placeholder = { Text("Ej: Madrid, Spain") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -419,11 +414,10 @@ fun MainStatusCard() {
         ) {
             Text("TU ESTADO AHORA", color = TextGrayLight, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
 
-            // Tag Visible
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .background(Color(0xFFEFF6FF), RoundedCornerShape(20.dp)) // Azul muy muy claro
+                    .background(Color(0xFFEFF6FF), RoundedCornerShape(20.dp))
                     .padding(horizontal = 10.dp, vertical = 4.dp)
             ) {
                 Box(modifier = Modifier.size(6.dp).background(AccentBlue, CircleShape))
@@ -438,15 +432,7 @@ fun MainStatusCard() {
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Textos
             Column(modifier = Modifier.weight(1f)) {
-//                Text(
-//                    text = "Libre ahora",
-//                    color = TextDark,
-//                    fontSize = 28.sp,
-//                    fontWeight = FontWeight.ExtraBold
-//                )
-//                Spacer(modifier = Modifier.height(8.dp))
                 Text(
                     text = "Avisamos a tus contactos de confianza que estás disponible.",
                     color = TextGrayLight,
@@ -462,25 +448,20 @@ fun MainStatusCard() {
                 initialValue = 0f,
                 targetValue = 360f,
                 animationSpec = infiniteRepeatable(
-                    // durationMillis: Cuanto más bajo, más rápido gira (3000ms = 3 segundos por vuelta)
                     animation = tween(durationMillis = 3000, easing = LinearEasing),
                     repeatMode = RepeatMode.Restart
                 ),
                 label = "angulo_rotacion"
             )
 
-// Anillo de Estado
             Box(contentAlignment = Alignment.Center) {
 
-                // Degradado del anillo (ANIMADO)
                 Canvas(
                     modifier = Modifier
                         .size(90.dp)
                         .rotate(angle)
                 ) {
                     val brush = Brush.sweepGradient(
-                        // Nota: Es importante que el primer y el último color sean iguales
-                        // para que no se note el corte al girar.
                         colors = listOf(StatusGreenRing, Color(0xFF3B82F6), StatusGreenRing)
                     )
                     drawCircle(
@@ -489,8 +470,6 @@ fun MainStatusCard() {
                     )
                 }
 
-                // Interior oscuro para contraste (ESTÁTICO - No rota)
-                // Al estar fuera del Canvas que rotamos, el texto se mantiene legible.
                 Box(
                     modifier = Modifier
                         .size(70.dp)
