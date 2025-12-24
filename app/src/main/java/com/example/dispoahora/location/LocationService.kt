@@ -16,17 +16,15 @@ class LocationService(private val context: Context) {
 
     private val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
 
-    @SuppressLint("MissingPermission") // Ya controlaremos los permisos en la UI
+    @SuppressLint("MissingPermission")
     suspend fun getCurrentLocation(): String? {
         return try {
-            // 1. Obtener coordenadas precisas
             val location: Location? = fusedLocationClient.getCurrentLocation(
                 Priority.PRIORITY_HIGH_ACCURACY,
                 null
             ).await()
 
             location?.let {
-                // 2. Convertir coordenadas a dirección (Geocoding inverso)
                 getCityName(it.latitude, it.longitude)
             }
         } catch (e: Exception) {
@@ -38,13 +36,11 @@ class LocationService(private val context: Context) {
     private fun getCityName(lat: Double, long: Double): String {
         return try {
             val geocoder = Geocoder(context, Locale.getDefault())
-            // El 1 significa que solo queremos 1 resultado (el mejor)
             @Suppress("DEPRECATION")
             val addresses = geocoder.getFromLocation(lat, long, 1)
 
             if (!addresses.isNullOrEmpty()) {
                 val address = addresses[0]
-                // Devuelve "Ciudad, País" o "Ciudad" si no hay país
                 val city = address.locality ?: address.subAdminArea ?: "Ubicación desconocida"
                 val country = address.countryName
                 "$city, $country"
@@ -57,10 +53,10 @@ class LocationService(private val context: Context) {
     }
 
     fun checkLocationSettings(
-        onEnabled: () -> Unit, // Qué hacer si el GPS ya está bien
-        onDisabled: (ResolvableApiException) -> Unit // Qué hacer si está apagado (nos da la excepción para arreglarlo)
+        onEnabled: () -> Unit,
+        onDisabled: (ResolvableApiException) -> Unit
     ) {
-        val locationRequest = LocationRequest.Builder(10000) // Intervalo de 10 seg
+        val locationRequest = LocationRequest.Builder(10000)
             .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
             .build()
         val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
@@ -73,7 +69,6 @@ class LocationService(private val context: Context) {
 
         task.addOnFailureListener { exception ->
             if (exception is ResolvableApiException) {
-                // El GPS está apagado, pero podemos pedir encenderlo
                 onDisabled(exception)
             }
         }
