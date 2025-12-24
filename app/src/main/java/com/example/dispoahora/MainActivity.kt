@@ -22,7 +22,6 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
@@ -66,9 +65,13 @@ import com.example.dispoahora.location.LocationService
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.style.LineHeightStyle
+import com.example.dispoahora.contacts.TextGray
 
 val PastelBlueTop = Color(0xFFD3E1F0)   // Azul muy pálido, casi blanco
 val PastelBlueBottom = Color(0xFFA0B8D7) // Azul lavanda suave
@@ -82,6 +85,8 @@ val TextDark = Color(0xFF1F2937)  // Texto principal casi negro
 val TextGrayLight = Color(0xFF6B7280) // Texto secundario gris
 val AccentBlue = Color(0xFF5B8DEF) // Azul para botones activos (como Café)
 val StatusGreenRing = Color(0xFF86EFAC) // Verde pastel brillante para el anillo
+
+val StatusRedRing = Color(0xFFE92C2C)
 val StatusGreenText = Color(0xFF10B981)
 val DarkAlertBg = Color(0xFF282B46) // Mantenemos la alerta oscura para contraste
 
@@ -400,15 +405,22 @@ fun LocationSelectionDialog(
 
 @Composable
 fun MainStatusCard() {
+    var isLibre by remember { mutableStateOf(true) }
+    var textLibreOcupado: String
+
+    if (isLibre) textLibreOcupado = "Ocupado"
+    else textLibreOcupado = "Libre"
+
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp, start = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text("TU ESTADO AHORA", color = TextGrayLight, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+        Text("TU ESTADO AHORA", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
     }
 
     Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .fillMaxWidth()
             .shadow(6.dp, RoundedCornerShape(24.dp), spotColor = Color(0xFF5B8DEF).copy(alpha = 0.15f))
@@ -430,69 +442,99 @@ fun MainStatusCard() {
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "Avisamos a tus contactos de confianza que estás disponible.",
+                    text = "Avisamos a tus\n contactos que estás\n disponible.",
                     color = TextGrayLight,
                     fontSize = 14.sp,
                     lineHeight = 20.sp
                 )
             }
 
-            Spacer(modifier = Modifier.width(16.dp))
-
-            val infiniteTransition = rememberInfiniteTransition(label = "anillo_animacion")
-            val angle by infiniteTransition.animateFloat(
-                initialValue = 0f,
-                targetValue = 360f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(durationMillis = 3000, easing = LinearEasing),
-                    repeatMode = RepeatMode.Restart
-                ),
-                label = "angulo_rotacion"
+            StatusRingButton(
+                isLibre = isLibre,
+                onToggle = {
+                    isLibre = !isLibre
+                }
             )
-
-            Box(contentAlignment = Alignment.Center) {
-
-                Canvas(
-                    modifier = Modifier
-                        .size(90.dp)
-                        .rotate(angle)
-                ) {
-                    val brush = Brush.sweepGradient(
-                        colors = listOf(StatusGreenRing, Color(0xFF3B82F6), StatusGreenRing)
-                    )
-                    drawCircle(
-                        brush = brush,
-                        style = Stroke(width = 10.dp.toPx(), cap = StrokeCap.Round)
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .size(70.dp)
-                        .background(Color(0xFF0F172A), CircleShape)
-                        .border(1.dp, Color.White.copy(alpha = 0.1f), CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("ESTADO", color = Color(0xFF94A3B8), fontSize = 9.sp, fontWeight = FontWeight.Bold)
-                        Text("Libre", color = Color.White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Toca para cambiar a \"Ocupado\"",
+            text = "Toca para cambiar a \"$textLibreOcupado\"",
             color = TextGrayLight,
             fontSize = 12.sp,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
+    }
+}
+
+@Composable
+fun StatusRingButton(
+    isLibre: Boolean,
+    onToggle: () -> Unit
+) {
+    val infiniteTransition = rememberInfiniteTransition(label = "anillo_animacion")
+    val angle by infiniteTransition.animateFloat(
+        initialValue = 0f,
+        targetValue = 360f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 3000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        ),
+        label = "angulo_rotacion"
+    )
+
+    val primaryColor = if (isLibre) StatusGreenRing else StatusRedRing
+    val secondaryColor = if (isLibre) Color(0xFF3B82F6) else Color(0xFFF6A3FF)
+
+    val statusText = if (isLibre) "Libre" else "Ocupado"
+    val statusFontSize = if (isLibre) 15.sp else 10.sp
+
+    Box(contentAlignment = Alignment.Center) {
+
+        Canvas(
+            modifier = Modifier
+                .size(90.dp)
+                .rotate(angle)
+        ) {
+            val brush = Brush.sweepGradient(
+                colors = listOf(primaryColor, secondaryColor, primaryColor)
+            )
+            drawCircle(
+                brush = brush,
+                style = Stroke(width = 10.dp.toPx(), cap = StrokeCap.Round)
+            )
+        }
+
+        Box(
+            modifier = Modifier
+                .size(70.dp)
+                .clip(CircleShape)
+                .background(Color(0xFF0F172A))
+                .border(1.dp, Color.White.copy(alpha = 0.1f), CircleShape)
+                .clickable { onToggle() },
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "ESTADO",
+                    color = Color(0xFF94A3B8),
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = statusText,
+                    color = Color.White,
+                    fontSize = statusFontSize,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
     }
 }
 
