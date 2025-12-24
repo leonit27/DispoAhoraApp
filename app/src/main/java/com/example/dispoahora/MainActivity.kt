@@ -67,7 +67,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import com.example.dispoahora.contacts.TextGray
 
 import androidx.compose.runtime.*
 import kotlinx.coroutines.delay
@@ -76,9 +75,10 @@ import java.time.Duration
 import java.time.format.DateTimeParseException
 
 import androidx.compose.runtime.rememberCoroutineScope
+import com.example.dispoahora.contacts.TextGray
 import com.example.dispoahora.supabase.supabase
 import io.github.jan.supabase.auth.auth
-import io.github.jan.supabase.postgrest.from // Asegúrate de tener los imports de Supabase
+import io.github.jan.supabase.postgrest.from
 import kotlinx.coroutines.launch
 import java.time.temporal.ChronoUnit
 
@@ -152,11 +152,13 @@ fun ContactsMapCard() {
     // Estado inicial de la cámara (Madrid por defecto, luego usaremos GPS real)
     val mapViewportState = rememberMapViewportState {
         setCameraOptions {
-            zoom(14.0) // Zoom cercano tipo calle
+            zoom(14.0)
             center(Point.fromLngLat(-3.7038, 40.4168))
-            pitch(0.0) // Vista cenital (desde arriba)
+            pitch(0.0)
         }
     }
+
+    SectionTitle("CONTACTOS CERCA")
 
     Column(
         modifier = Modifier
@@ -165,15 +167,6 @@ fun ContactsMapCard() {
             .background(Color.White.copy(alpha = 0.8f), RoundedCornerShape(24.dp))
             .padding(16.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Column {
-                Text("Contactos cerca", color = Color(0xFF1F2937), fontWeight = FontWeight.Bold)
-                Text("Explora quién está libre a tu alrededor", color = Color(0xFF6B7280), fontSize = 11.sp)
-            }
-        }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -460,13 +453,7 @@ fun MainStatusCard(
         return
     }
 
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(bottom = 5.dp, start = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text("TU ESTADO AHORA", color = TextGray, fontSize = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-    }
+    SectionTitle("TU ESTADO AHORA")
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -515,24 +502,21 @@ fun MainStatusCard(
                 isLibre = isLibre,
                 onToggle = {
                     val newState = !isLibre
-                    isLibre = newState // 1. Actualizamos UI visualmente al instante (Optimistic UI)
+                    isLibre = newState
 
                     scope.launch {
                         android.util.Log.d("DISPO_DEBUG", "Intentando actualizar. ID Usuario: '$myUserId'")
 
                         try {
                             if (newState) {
-                                // CASO: SE PONE LIBRE
-                                // Calculamos la hora: Ahora + 1 hora
                                 val newExpiryTime = Instant.now()
                                     .plus(1, ChronoUnit.HOURS)
                                     .toString()
 
-                                expiresAt = newExpiryTime // Actualizamos local
+                                expiresAt = newExpiryTime
 
                                 android.util.Log.d("DISPO_DEBUG", "Enviando estado LIBRE hasta: $newExpiryTime")
 
-                                // GUARDAMOS EN SUPABASE
                                 supabase.from("profiles").update(
                                     mapOf(
                                         "status" to "Libre",
@@ -540,20 +524,18 @@ fun MainStatusCard(
                                     )
                                 ) {
                                     filter {
-                                        eq("id", myUserId) // Solo actualiza MI usuario
+                                        eq("id", myUserId)
                                     }
                                 }
 
                             } else {
-                                // CASO: SE PONE OCUPADO
-                                expiresAt = null // Borramos local
+                                expiresAt = null
                                 android.util.Log.d("DISPO_DEBUG", "Enviando estado OCUPADO")
 
-                                // GUARDAMOS EN SUPABASE
                                 supabase.from("profiles").update(
                                     mapOf(
                                         "status" to "Ocupado",
-                                        "status_expires_at" to null // Borramos fecha en BD
+                                        "status_expires_at" to null
                                     )
                                 ) {
                                     filter {
@@ -562,12 +544,9 @@ fun MainStatusCard(
                                 }
 
                             }
-                            android.util.Log.d("DISPO_DEBUG", "¡Actualización ÉXITOSA en Supabase!")
                         } catch (e: Exception) {
-                            // Si falla internet, aquí podrías revertir el estado visual
-                            android.util.Log.e("DISPO_ERROR", "Error al actualizar: ${e.message}")
                             e.printStackTrace()
-                            isLibre = !newState // Revertir cambio si falló
+                            isLibre = !newState
                         }
                     }
                 }
@@ -625,6 +604,8 @@ fun CountdownDisplay(
 
 @Composable
 fun QuickActivitySection() {
+    SectionTitle("ACTIVIDAD RÁPIDA")
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -639,11 +620,43 @@ fun QuickActivitySection() {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Actividad rápida", color = TextDark, fontSize = 15.sp, fontWeight = FontWeight.Bold)
             Text("Elige qué te apetece ahora", color = TextGrayLight, fontSize = 11.sp)
+
+
+            FilterChip(
+                selected = false,
+                onClick = { /* Lógica para añadir */ },
+                label = {
+                    Text(
+                        "Añadir",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                },
+                shape = RoundedCornerShape(12.dp),
+                colors = FilterChipDefaults.filterChipColors(
+                    containerColor = Color.White.copy(alpha = 0.5f),
+                    labelColor = TextGray,
+                    iconColor = TextGray,
+                    selectedContainerColor = AccentBlue.copy(alpha = 0.2f)
+                ),
+                border = FilterChipDefaults.filterChipBorder(
+                    enabled = true,
+                    selected = false,
+                    borderColor = Color.Gray.copy(alpha = 0.1f),
+                    borderWidth = 1.dp
+                )
+            )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         LazyRow(
             contentPadding = PaddingValues(horizontal = 20.dp),
