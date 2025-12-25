@@ -25,7 +25,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -686,24 +685,6 @@ fun QuickActivitySection() {
                     .background(Color(0xFF9CA3AF), RoundedCornerShape(2.dp))
             )
         }
-    }
-}
-
-@Composable
-fun ActivityChip(icon: ImageVector, text: String, isSelected: Boolean) {
-    val bgColor = if (isSelected) AccentBlue else Color(0xFFF3F4F6)
-    val contentColor = if (isSelected) Color.White else TextDark
-
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(50))
-            .background(bgColor)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(imageVector = icon, contentDescription = null, tint = contentColor, modifier = Modifier.size(18.dp))
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(text = text, color = contentColor, fontWeight = FontWeight.Bold, fontSize = 13.sp)
     }
 }
 
