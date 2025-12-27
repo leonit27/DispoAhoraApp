@@ -51,6 +51,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.activity.result.IntentSenderRequest
+import androidx.compose.foundation.Image
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -74,6 +75,7 @@ import java.time.Duration
 import java.time.format.DateTimeParseException
 
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.res.painterResource
 import com.example.dispoahora.contacts.TextGray
 import com.example.dispoahora.supabase.supabase
 import io.github.jan.supabase.auth.auth
@@ -662,9 +664,17 @@ fun QuickActivitySection() {
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
+//                Image(
+//                    painter = painterResource(id = R.drawable.coffee),
+//                    contentDescription = null,
+//                    contentScale = ContentScale.Crop,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .height(200.dp)
+//                )
                 ActivityChip(icon = Icons.Default.ShoppingCart, text = "Café", isSelected = true)
             }
-            items(listOf("Deporte", "Cena", "Chat")) { activity ->
+            items(listActivities) { activity ->
                 ActivityChip(icon = Icons.Default.PlayArrow, text = activity, isSelected = false)
             }
         }
@@ -688,6 +698,9 @@ fun QuickActivitySection() {
     }
 }
 
+val listActivities = listOf("Café", "Deporte", "Cena", "Chat")
+
+val mapa = mapOf(R.drawable.coffee to "Café", Icons.Default.Add to "Deporte",Icons.Default.Add to "Cena", Icons.Default.Add to "Chat" )
 @Composable
 fun CustomBottomBar(
     onProfileClick: () -> Unit = {},
