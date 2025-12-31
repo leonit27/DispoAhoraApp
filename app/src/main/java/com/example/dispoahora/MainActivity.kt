@@ -700,7 +700,7 @@ fun QuickActivitySection() {
 
 val listActivities = listOf("Café", "Deporte", "Cena", "Chat")
 
-val mapa = mapOf(R.drawable.coffee to "Café", Icons.Default.Add to "Deporte",Icons.Default.Add to "Cena", Icons.Default.Add to "Chat" )
+val mapActivities = mapOf(R.drawable.coffee to "Café", R.drawable.sports to "Deporte", R.drawable.dinner to "Cena", R.drawable.chat to "Chat" )
 @Composable
 fun CustomBottomBar(
     onProfileClick: () -> Unit = {},
