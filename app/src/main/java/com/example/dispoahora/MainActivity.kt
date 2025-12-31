@@ -9,7 +9,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -51,7 +50,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.activity.result.IntentSenderRequest
-import androidx.compose.foundation.Image
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -62,6 +60,7 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.pointer.pointerInput
@@ -75,6 +74,8 @@ import java.time.Duration
 import java.time.format.DateTimeParseException
 
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.painterResource
 import com.example.dispoahora.contacts.TextGray
 import com.example.dispoahora.supabase.supabase
@@ -213,7 +214,7 @@ fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () ->
         Spacer(modifier = Modifier.height(20.dp))
         MainStatusCard(myUserId = myUserId)
         Spacer(modifier = Modifier.height(20.dp))
-        QuickActivitySection()
+        ActivitySection()
         Spacer(modifier = Modifier.height(20.dp))
         ContactsMapCard()
         Spacer(modifier = Modifier.height(20.dp))
@@ -604,8 +605,11 @@ fun CountdownDisplay(
 }
 
 @Composable
-fun QuickActivitySection() {
+fun ActivitySection() {
     SectionTitle("ACTIVIDAD RÁPIDA")
+
+    val activitiesList = rememberUserActivities()
+    var showAddDialog by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -626,7 +630,7 @@ fun QuickActivitySection() {
 
             FilterChip(
                 selected = false,
-                onClick = { /* Lógica para añadir */ },
+                onClick = { showAddDialog = true },
                 label = {
                     Text(
                         "Añadir",
@@ -659,24 +663,35 @@ fun QuickActivitySection() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        var selectedActivity by remember { mutableStateOf("Café") }
+
         LazyRow(
             contentPadding = PaddingValues(horizontal = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            item {
-//                Image(
-//                    painter = painterResource(id = R.drawable.coffee),
-//                    contentDescription = null,
-//                    contentScale = ContentScale.Crop,
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .height(200.dp)
-//                )
-                ActivityChip(icon = Icons.Default.ShoppingCart, text = "Café", isSelected = true)
+            items(activitiesList) { activity ->
+                ActivityChip(
+                    icon = if (activity.iconRes != null) {
+                        painterResource(id = activity.iconRes)
+                    } else {
+                        rememberVectorPainter(image = activity.iconVector!!)
+                    },
+                    text = activity.name,
+                    isSelected = selectedActivity == activity.name,
+                    onClick = { selectedActivity = activity.name }
+                )
             }
-            items(listActivities) { activity ->
-                ActivityChip(icon = Icons.Default.PlayArrow, text = activity, isSelected = false)
-            }
+        }
+
+        if (showAddDialog) {
+            AddActivityDialog(
+                onDismiss = { showAddDialog = false },
+                onActivityAdded = { name, vectorIcon ->
+                    activitiesList.add(UserActivity(name, iconVector = vectorIcon))
+                    selectedActivity = name
+                    showAddDialog = false
+                }
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -698,9 +713,81 @@ fun QuickActivitySection() {
     }
 }
 
-val listActivities = listOf("Café", "Deporte", "Cena", "Chat")
+@Composable
+fun AddActivityDialog(
+    onDismiss: () -> Unit,
+    onActivityAdded: (String, ImageVector) -> Unit
+) {
+    var activityName by remember { mutableStateOf("") }
+    var selectedIcon by remember { mutableStateOf(Icons.Default.Star) }
 
-val mapActivities = mapOf(R.drawable.coffee to "Café", R.drawable.sports to "Deporte", R.drawable.dinner to "Cena", R.drawable.chat to "Chat" )
+    val availableIcons = listOf(
+        Icons.Default.Add, Icons.Default.Home, Icons.Default.Edit,
+        Icons.Default.LocationOn, Icons.Default.ShoppingCart, Icons.Default.Warning,
+        Icons.Default.CheckCircle, Icons.Default.Check, Icons.Default.PlayArrow
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Nueva Actividad", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                OutlinedTextField(
+                    value = activityName,
+                    onValueChange = { activityName = it },
+                    label = { Text("Nombre de la actividad") },
+                    placeholder = { Text("Ej: Leer, Estudiar...") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp)
+                )
+
+                Text("Elige un icono", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(vertical = 4.dp)
+                ) {
+                    items(availableIcons) { icon ->
+                        Box(
+                            modifier = Modifier
+                                .size(45.dp)
+                                .clip(CircleShape)
+                                .background(if (selectedIcon == icon) AccentBlue else Color.Transparent)
+                                .clickable { selectedIcon = icon },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = icon,
+                                contentDescription = null,
+                                tint = if (selectedIcon == icon) Color(0xFF1D4ED8) else Color.Gray,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    if (activityName.isNotBlank()) {
+                        onActivityAdded(activityName, selectedIcon)
+                    }
+                },
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text("Añadir")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
+}
+
 @Composable
 fun CustomBottomBar(
     onProfileClick: () -> Unit = {},
