@@ -719,7 +719,7 @@ fun AddActivityDialog(
     onActivityAdded: (String, ImageVector) -> Unit
 ) {
     var activityName by remember { mutableStateOf("") }
-    var selectedIcon by remember { mutableStateOf(Icons.Default.Star) }
+    var selectedIcon by remember { mutableStateOf(Icons.Default.Add) }
 
     val availableIcons = listOf(
         Icons.Default.Add, Icons.Default.Home, Icons.Default.Edit,
@@ -727,14 +727,14 @@ fun AddActivityDialog(
         Icons.Default.CheckCircle, Icons.Default.Check, Icons.Default.PlayArrow,
         Icons.Default.Person, Icons.Default.AccountBox, Icons.Default.AccountCircle,
         Icons.Default.AddCircle, Icons.Default.ArrowDropDown, Icons.Default.Build,
-        Icons.Default.Call, Icons.Default.Clear, Icons.Default.Close,
+        Icons.Default.Call, Icons.Default.Clear, Icons.Default.ThumbUp,
         Icons.Default.Create, Icons.Default.DateRange, Icons.Default.Delete,
         Icons.Default.Done, Icons.Default.Email, Icons.Default.Face,
         Icons.Default.Favorite, Icons.Default.FavoriteBorder, Icons.Default.Info,
         Icons.Default.KeyboardArrowDown, Icons.Default.KeyboardArrowUp, Icons.Default.Lock,
         Icons.Default.MailOutline, Icons.Default.Menu, Icons.Default.Notifications,
         Icons.Default.Refresh, Icons.Default.Search, Icons.Default.Settings,
-        Icons.Default.Star, Icons.Default.ThumbUp
+        Icons.Default.Star
     )
 
     AlertDialog(
