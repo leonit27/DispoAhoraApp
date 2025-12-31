@@ -724,7 +724,17 @@ fun AddActivityDialog(
     val availableIcons = listOf(
         Icons.Default.Add, Icons.Default.Home, Icons.Default.Edit,
         Icons.Default.LocationOn, Icons.Default.ShoppingCart, Icons.Default.Warning,
-        Icons.Default.CheckCircle, Icons.Default.Check, Icons.Default.PlayArrow
+        Icons.Default.CheckCircle, Icons.Default.Check, Icons.Default.PlayArrow,
+        Icons.Default.Person, Icons.Default.AccountBox, Icons.Default.AccountCircle,
+        Icons.Default.AddCircle, Icons.Default.ArrowDropDown, Icons.Default.Build,
+        Icons.Default.Call, Icons.Default.Clear, Icons.Default.Close,
+        Icons.Default.Create, Icons.Default.DateRange, Icons.Default.Delete,
+        Icons.Default.Done, Icons.Default.Email, Icons.Default.Face,
+        Icons.Default.Favorite, Icons.Default.FavoriteBorder, Icons.Default.Info,
+        Icons.Default.KeyboardArrowDown, Icons.Default.KeyboardArrowUp, Icons.Default.Lock,
+        Icons.Default.MailOutline, Icons.Default.Menu, Icons.Default.Notifications,
+        Icons.Default.Refresh, Icons.Default.Search, Icons.Default.Settings,
+        Icons.Default.Star, Icons.Default.ThumbUp
     )
 
     AlertDialog(
@@ -736,7 +746,6 @@ fun AddActivityDialog(
                     value = activityName,
                     onValueChange = { activityName = it },
                     label = { Text("Nombre de la actividad") },
-                    placeholder = { Text("Ej: Leer, Estudiar...") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp)
