@@ -17,6 +17,7 @@ import com.example.dispoahora.login.AuthState
 import com.example.dispoahora.login.AuthViewModel
 import com.example.dispoahora.login.LoginScreen
 import com.example.dispoahora.login.ProfileScreen
+import com.example.dispoahora.utils.CustomBottomBar
 
 // 1. Definimos las rutas (Nombres de las pantallas)
 sealed class Screen(val route: String) {
