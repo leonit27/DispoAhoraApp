@@ -80,7 +80,6 @@ fun LoginScreen(
                         .fillMaxWidth()
                         .height(54.dp)
                 ) {
-                    // Aquí podrías añadir un Icono de Google si lo tienes en tus recursos
                     /* Icon(
                         painter = painterResource(id = R.drawable.ic_google),
                         contentDescription = "Logo Google",

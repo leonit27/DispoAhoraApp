@@ -6,15 +6,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -29,10 +25,8 @@ import androidx.core.view.WindowCompat
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dispoahora.login.AuthViewModel
-import coil.compose.AsyncImage
 
 import androidx.compose.material3.Text
 import com.example.dispoahora.location.LocationViewModel
@@ -41,27 +35,17 @@ import com.mapbox.geojson.Point
 import com.mapbox.maps.extension.compose.MapboxMap
 import com.mapbox.maps.extension.compose.animation.viewport.rememberMapViewportState
 import com.mapbox.maps.extension.compose.style.MapStyle
-
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import android.Manifest
 import android.annotation.SuppressLint
-import android.app.Activity
-import androidx.activity.result.IntentSenderRequest
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.example.dispoahora.location.LocationService
 
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.lazy.items
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 
 import androidx.compose.runtime.*
@@ -71,9 +55,6 @@ import java.time.Duration
 import java.time.format.DateTimeParseException
 
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.res.painterResource
-import com.example.dispoahora.contacts.TextGray
 import com.example.dispoahora.supabase.supabase
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.postgrest.from
@@ -81,21 +62,20 @@ import kotlinx.coroutines.launch
 import java.time.temporal.ChronoUnit
 
 import com.example.dispoahora.utils.*
-import com.example.dispoahora.utils.dialogs.AddActivityDialog
 import com.mapbox.maps.MapboxExperimental
 
-val PastelBlueTop = Color(0xFFD3E1F0)   // Azul muy pálido, casi blanco
-val PastelBlueBottom = Color(0xFFA0B8D7) // Azul lavanda suave
+val PastelBlueTop = Color(0xFFD3E1F0)
+val PastelBlueBottom = Color(0xFFA0B8D7)
 val GradientBackground = Brush.verticalGradient(
     colors = listOf(PastelBlueTop, PastelBlueBottom)
 )
 
 // Colores de UI
-val CardWhite = Color(0xFFFFFFFF) // Tarjetas blancas limpias
-val TextDark = Color(0xFF1F2937)  // Texto principal casi negro
-val TextGrayLight = Color(0xFF6B7280) // Texto secundario gris
-val AccentBlue = Color(0xFF5B8DEF) // Azul para botones activos (como Café)
-val StatusGreenRing = Color(0xFF86EFAC) // Verde pastel brillante para el anillo
+val CardWhite = Color(0xFFFFFFFF)
+val TextDark = Color(0xFF1F2937)
+val TextGrayLight = Color(0xFF6B7280)
+val AccentBlue = Color(0xFF5B8DEF)
+val StatusGreenRing = Color(0xFF86EFAC)
 
 val StatusRedRing = Color(0xFFE92C2C)
 
@@ -148,7 +128,6 @@ fun Modifier.allowMapGestures(): Modifier {
 @OptIn(MapboxExperimental::class)
 @Composable
 fun ContactsMapCard() {
-    // Estado inicial de la cámara (Madrid por defecto, luego usaremos GPS real)
     val mapViewportState = rememberMapViewportState {
         setCameraOptions {
             zoom(14.0)
@@ -180,11 +159,8 @@ fun ContactsMapCard() {
                     MapStyle(style = "mapbox://styles/mapbox/light-v11")
                 }
             ) {
-                // AQUÍ IRÁN LOS PINES (MARCADORES) MÁS ADELANTE
             }
 
-            // Opcional: Un pequeño botón o texto flotante sobre el mapa
-            // Text("Mapa en vivo", Modifier.align(Alignment.TopEnd).padding(8.dp), fontSize = 10.sp)
         }
     }
 }

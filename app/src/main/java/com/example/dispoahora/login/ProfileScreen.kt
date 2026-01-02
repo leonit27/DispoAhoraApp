@@ -27,10 +27,10 @@ import com.example.dispoahora.GradientBackground
 import com.example.dispoahora.TextDark
 import com.example.dispoahora.TextGrayLight
 
-val EditButtonBg = Color(0xFFE0E7FF) // Azul muy claro para botón editar
-val EditButtonText = Color(0xFF4F46E5) // Azul índigo
-val DangerBg = Color(0xFFFEE2E2) // Rojo muy claro
-val DangerText = Color(0xFFDC2626) // Rojo fuerte
+val EditButtonBg = Color(0xFFE0E7FF)
+val EditButtonText = Color(0xFF4F46E5)
+val DangerBg = Color(0xFFFEE2E2)
+val DangerText = Color(0xFFDC2626)
 
 @Composable
 fun ProfileScreen(
@@ -38,7 +38,6 @@ fun ProfileScreen(
     email: String,
     onSignOut: () -> Unit
 ) {
-    // Usamos el mismo fondo degradado que la home
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -54,12 +53,10 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // --- Tarjeta Principal del Perfil ---
             MainProfileCard(username)
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Sección: Cuenta ---
             SectionHeader(title = "Cuenta", subtitle = "Gestiona tus datos básicos de acceso")
             Spacer(modifier = Modifier.height(8.dp))
             SectionCard {
@@ -74,7 +71,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Sección: Red y visibilidad ---
             SectionHeader(title = "Red y visibilidad", subtitle = "Decide quién puede verte y cómo te encuentran")
             Spacer(modifier = Modifier.height(8.dp))
             SectionCard {
@@ -89,7 +85,6 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // --- Sección: Seguridad y sesión ---
             SectionHeader(title = "Seguridad y sesión", subtitle = "Controla tu acceso y dónde has iniciado sesión")
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -98,7 +93,6 @@ fun ProfileScreen(
             ActionButton(text = "Dispositivos con sesión iniciada", icon = Icons.Outlined.CheckCircle)
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Botón Cerrar Sesión (Estilo Peligro)
             Button(
                 onClick = onSignOut,
                 colors = ButtonDefaults.buttonColors(containerColor = DangerBg, contentColor = DangerText),
@@ -114,39 +108,6 @@ fun ProfileScreen(
             }
 
             Spacer(modifier = Modifier.height(40.dp))
-        }
-    }
-}
-
-@Composable
-fun ProfileHeader(username: String?) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(
-                text = "Hola, $username!",
-                color = TextDark,
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Text(
-                text = "Barcelona, Eixample",
-                color = TextGrayLight,
-                fontSize = 14.sp
-            )
-        }
-        // Avatar pequeño (hace de botón atrás si quieres, o solo visual)
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(Color.White.copy(alpha = 0.5f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("T", fontWeight = FontWeight.Bold, color = TextDark, fontSize = 18.sp)
         }
     }
 }
@@ -203,7 +164,6 @@ fun MainProfileCard(username: String?) {
                     ProfileStat("18", "Círculo")
                 }
 
-                // Botón Editar
                 Button(
                     onClick = { /* TODO: Editar */ },
                     colors = ButtonDefaults.buttonColors(containerColor = EditButtonBg, contentColor = EditButtonText),

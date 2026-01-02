@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.sp
 import com.example.dispoahora.PastelBlueBottom
 import com.example.dispoahora.PastelBlueTop
 
-// --- TUS COLORES PASTEL ---
 val GradientBackground = Brush.verticalGradient(
     colors = listOf(PastelBlueTop, PastelBlueBottom)
 )
@@ -44,7 +43,6 @@ fun ContactsScreen() {
     ) {
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 1. TÍTULO
         Text(
             text = "Contactos",
             fontSize = 28.sp,
@@ -58,12 +56,10 @@ fun ContactsScreen() {
             modifier = Modifier.padding(top = 4.dp, bottom = 20.dp)
         )
 
-        // 2. BARRA DE BÚSQUEDA Y FILTRO
         SearchBarSection()
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // 3. CARD DE FAVORITOS (Bloque contenedor)
         ContactGroupCard(
             title = "Favoritos",
             count = "3 activos",
@@ -72,7 +68,6 @@ fun ContactsScreen() {
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // 4. CARD DE CERCA DE TI (Bloque contenedor)
         ContactGroupCard(
             title = "Cerca de ti",
             count = "5 alrededor",
@@ -82,16 +77,12 @@ fun ContactsScreen() {
         Spacer(modifier = Modifier.height(100.dp)) // Espacio final para la BottomBar
     }
 }
-
-// --- COMPONENTES AUXILIARES ---
-
 @Composable
 fun SearchBarSection() {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
-        // Campo de texto
         TextField(
             value = "",
             onValueChange = {},
@@ -111,9 +102,8 @@ fun SearchBarSection() {
 
         Spacer(modifier = Modifier.width(12.dp))
 
-        // Botón de filtro (Verdesito pastel)
         Button(
-            onClick = { /* Acción filtro */ },
+            onClick = { /**/ },
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4F5BE)), // Verde lima pastel
             shape = RoundedCornerShape(16.dp),
             contentPadding = PaddingValues(0.dp),
@@ -124,7 +114,7 @@ fun SearchBarSection() {
             Icon(
                 imageVector = Icons.Default.ShoppingCart,
                 contentDescription = "Filtro",
-                tint = Color(0xFF3F6212) // Verde oscuro texto
+                tint = Color(0xFF3F6212)
             )
         }
     }
@@ -176,17 +166,15 @@ fun ContactItemRow(contact: ContactModel) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp), // Espaciado interno de cada fila
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 1. AVATAR CON PUNTO DE ESTADO
         Box {
-            // Círculo de la foto (o inicial)
             Box(
                 modifier = Modifier
                     .size(48.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFFE0E7FF)), // Azulito fondo avatar
+                    .background(Color(0xFFE0E7FF)),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -196,16 +184,15 @@ fun ContactItemRow(contact: ContactModel) {
                     color = Color(0xFF4338CA)
                 )
             }
-            // Punto verde de "Online"
             if (contact.isOnline) {
                 Box(
                     modifier = Modifier
                         .size(14.dp)
                         .clip(CircleShape)
-                        .background(Color.White) // Borde blanco
+                        .background(Color.White)
                         .padding(2.dp)
                         .clip(CircleShape)
-                        .background(StatusGreen) // Relleno verde
+                        .background(StatusGreen)
                         .align(Alignment.BottomEnd)
                 )
             }
@@ -213,7 +200,6 @@ fun ContactItemRow(contact: ContactModel) {
 
         Spacer(modifier = Modifier.width(14.dp))
 
-        // 2. DATOS CENTRALES
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -223,7 +209,6 @@ fun ContactItemRow(contact: ContactModel) {
                     color = TextDark
                 )
 
-                // Badge de "Libre"
                 if (contact.statusTag != null) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Box(
@@ -234,7 +219,7 @@ fun ContactItemRow(contact: ContactModel) {
                     ) {
                         Text(
                             text = contact.statusTag,
-                            color = Color(0xFF065F46), // Verde oscuro texto
+                            color = Color(0xFF065F46),
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -250,7 +235,6 @@ fun ContactItemRow(contact: ContactModel) {
             )
         }
 
-        // 3. DATOS DERECHA (Ubicación)
         Column(horizontalAlignment = Alignment.End) {
             if (contact.distanceTag != null) {
                 Text(
@@ -269,13 +253,12 @@ fun ContactItemRow(contact: ContactModel) {
     }
 }
 
-// --- DATOS FALSOS PARA PROBAR ---
 data class ContactModel(
     val name: String,
-    val statusTag: String?, // Ej: "Libre", "Ocupado"
-    val activity: String,   // Ej: "Café • Hasta las 20:00"
-    val distanceTag: String?, // Ej: "Muy cerca"
-    val locationName: String, // Ej: "En tu zona"
+    val statusTag: String?,
+    val activity: String,
+    val distanceTag: String?,
+    val locationName: String,
     val isOnline: Boolean
 )
 
