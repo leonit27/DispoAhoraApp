@@ -41,7 +41,8 @@ import com.example.dispoahora.contacts.TextGray
 import com.example.dispoahora.utils.dialogs.AddActivityDialog
 
 @Composable
-fun ActivitySection() {
+fun ActivitySection(selectedActivity: String,
+                    onActivitySelected: (String) -> Unit) {
     SectionTitle("ACTIVIDAD RÁPIDA")
 
     val activitiesList = rememberUserActivities()
@@ -99,8 +100,6 @@ fun ActivitySection() {
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        var selectedActivity by remember { mutableStateOf("Café") }
-
         LazyRow(
             contentPadding = PaddingValues(horizontal = 20.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -114,7 +113,7 @@ fun ActivitySection() {
                     },
                     text = activity.name,
                     isSelected = selectedActivity == activity.name,
-                    onClick = { selectedActivity = activity.name }
+                    onClick = { onActivitySelected(activity.name) }
                 )
             }
         }
@@ -124,7 +123,7 @@ fun ActivitySection() {
                 onDismiss = { showAddDialog = false },
                 onActivityAdded = { name, vectorIcon ->
                     activitiesList.add(UserActivity(name, iconVector = vectorIcon))
-                    selectedActivity = name
+                     onActivitySelected(name)
                     showAddDialog = false
                 }
             )

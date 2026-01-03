@@ -63,6 +63,7 @@ import java.time.temporal.ChronoUnit
 
 import com.example.dispoahora.utils.*
 import com.mapbox.maps.MapboxExperimental
+import kotlinx.coroutines.CoroutineScope
 
 val PastelBlueTop = Color(0xFFD3E1F0)
 val PastelBlueBottom = Color(0xFFA0B8D7)
@@ -167,9 +168,12 @@ fun ContactsMapCard() {
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
-fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () -> Unit) {
+fun DispoAhoraScreen(username: String?, avatarUrl: String?, snackbarHostState: SnackbarHostState,
+                     coroutineScope: CoroutineScope, onOpenProfile: () -> Unit) {
     var isMapInteracting by remember { mutableStateOf(false) }
     val locationViewModel: LocationViewModel = viewModel()
+
+    var selectedActivity by remember { mutableStateOf("Café") }
 
     val currentUser = remember { supabase.auth.currentUserOrNull() }
     val myUserId = currentUser?.id ?: ""
@@ -185,9 +189,22 @@ fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () ->
         HeaderProfileSection(username, avatarUrl, onOpenProfile, locationViewModel)
 
         Spacer(modifier = Modifier.height(20.dp))
-        MainStatusCard(myUserId = myUserId)
+        MainStatusCard(myUserId = myUserId,
+            onStatusChanged = { nuevoEstado ->
+                if (nuevoEstado) {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(
+                            message = "Estás libre para: $selectedActivity",
+                            duration = SnackbarDuration.Short
+                        )
+                    }
+                }
+            })
         Spacer(modifier = Modifier.height(20.dp))
-        ActivitySection()
+        ActivitySection(selectedActivity = selectedActivity,
+            onActivitySelected = { nuevaActividad ->
+                selectedActivity = nuevaActividad
+        })
         Spacer(modifier = Modifier.height(20.dp))
         ContactsMapCard()
         Spacer(modifier = Modifier.height(20.dp))
@@ -195,9 +212,7 @@ fun DispoAhoraScreen(username: String?, avatarUrl: String?, onOpenProfile: () ->
 }
 
 @Composable
-fun MainStatusCard(
-    myUserId: String
-) {
+fun MainStatusCard(myUserId: String, onStatusChanged: (Boolean) -> Unit) {
     var isLibre by remember { mutableStateOf(true) }
     var expiresAt by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
@@ -293,6 +308,8 @@ fun MainStatusCard(
                 onToggle = {
                     val newState = !isLibre
                     isLibre = newState
+
+                    onStatusChanged(newState)
 
                     scope.launch {
                         android.util.Log.d("DISPO_DEBUG", "Intentando actualizar. ID Usuario: '$myUserId'")

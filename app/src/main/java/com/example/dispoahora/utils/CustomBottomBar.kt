@@ -32,7 +32,8 @@ import com.example.dispoahora.TextGrayLight
 
 @Composable
 fun CustomBottomBar(
-    onProfileClick: () -> Unit = {},
+    onHomeClick: () -> Unit = {},
+    onSettingsClick: () -> Unit = {},
     onContactsClick: () -> Unit = {}
 ) {
     Box(
@@ -48,7 +49,7 @@ fun CustomBottomBar(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onHomeClick() }) {
                 Icon(Icons.Outlined.Home, contentDescription = null, tint = TextGrayLight, modifier = Modifier.size(24.dp))
                 Spacer(modifier = Modifier.height(4.dp))
                 Text("Estado", color = AccentBlue, fontSize = 11.sp, fontWeight = FontWeight.Bold)
@@ -60,7 +61,7 @@ fun CustomBottomBar(
                 Text("Contactos", color = TextGrayLight, fontSize = 10.sp)
             }
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onProfileClick() }) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.clickable { onSettingsClick() }) {
                 Icon(Icons.Outlined.Settings, contentDescription = null, tint = TextGrayLight, modifier = Modifier.size(24.dp))
                 Spacer(modifier = Modifier.height(2.dp))
                 Text("Ajustes", color = TextGrayLight, fontSize = 10.sp)
