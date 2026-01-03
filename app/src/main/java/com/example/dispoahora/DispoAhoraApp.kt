@@ -61,12 +61,18 @@ fun DispoAhoraApp(authViewModel: AuthViewModel) {
             }
         },
         bottomBar = {
+            if (currentRoute != Screen.Login.route) {
                 CustomBottomBar(
                     currentRoute = currentRoute,
-                    onHomeClick = {navController.navigate(Screen.Home.route)},
+                    onHomeClick = {
+                        navController.navigate(Screen.Home.route) {
+                            popUpTo(Screen.Home.route) { inclusive = true }
+                        }
+                    },
                     onContactsClick = { navController.navigate(Screen.Contacts.route) },
                     onSettingsClick = { navController.navigate(Screen.Profile.route) }
                 )
+            }
         }
     ) { paddingValues ->
 
