@@ -62,6 +62,7 @@ fun DispoAhoraApp(authViewModel: AuthViewModel) {
         },
         bottomBar = {
                 CustomBottomBar(
+                    currentRoute = currentRoute,
                     onHomeClick = {navController.navigate(Screen.Home.route)},
                     onContactsClick = { navController.navigate(Screen.Contacts.route) },
                     onSettingsClick = { navController.navigate(Screen.Profile.route) }
