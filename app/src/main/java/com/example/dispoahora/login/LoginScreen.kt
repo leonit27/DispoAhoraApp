@@ -1,6 +1,7 @@
 package com.example.dispoahora.login
 
 import android.content.Context
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -10,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -25,6 +27,7 @@ import kotlinx.coroutines.launch
 import java.security.MessageDigest
 import java.util.UUID
 import com.example.dispoahora.BuildConfig
+import com.example.dispoahora.R
 
 const val WEB_GOOGLE_CLIENT_ID = BuildConfig.WEB_GOOGLE_CLIENT_ID
 
@@ -80,13 +83,15 @@ fun LoginScreen(
                         .fillMaxWidth()
                         .height(54.dp)
                 ) {
-                    /* Icon(
+                    Image(
                         painter = painterResource(id = R.drawable.ic_google),
-                        contentDescription = "Logo Google",
-                        modifier = Modifier.size(24.dp),
-                        tint = Color.Unspecified
+                        contentDescription = null,
+                        modifier = Modifier
+                            .height(30.dp)
+                            .width(30.dp)
                     )
-                    Spacer(modifier = Modifier.width(12.dp)) */
+
+                    Spacer(modifier = Modifier.width(12.dp))
 
                     Text(
                         text = "Continuar con Google",

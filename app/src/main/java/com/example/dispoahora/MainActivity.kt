@@ -71,7 +71,6 @@ val GradientBackground = Brush.verticalGradient(
     colors = listOf(PastelBlueTop, PastelBlueBottom)
 )
 
-// Colores de UI
 val CardWhite = Color(0xFFFFFFFF)
 val TextDark = Color(0xFF1F2937)
 val TextGrayLight = Color(0xFF6B7280)
@@ -108,19 +107,12 @@ fun Modifier.allowMapGestures(): Modifier {
     val context = LocalView.current
     return this.pointerInput(Unit) {
         awaitEachGesture {
-            // 1. Esperar a que el dedo toque la pantalla (ACTION_DOWN)
-            // 'requireUnconsumed = false' es clave: detecta el toque aunque Mapbox también lo quiera.
             awaitFirstDown(requireUnconsumed = false)
 
-            // 2. EN ESE INSTANTE, BLOQUEAR AL PADRE
-            // Esto busca al padre (el Scroll) y le dice "No interceptes nada"
             context.parent?.requestDisallowInterceptTouchEvent(true)
 
-            // 3. Esperar a que el usuario levante el dedo o cancele
             waitForUpOrCancellation()
 
-            // 4. DESBLOQUEAR AL PADRE
-            // Cuando levantas el dedo, el scroll vuelve a funcionar
             context.parent?.requestDisallowInterceptTouchEvent(false)
         }
     }
