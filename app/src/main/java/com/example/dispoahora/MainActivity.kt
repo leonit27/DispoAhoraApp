@@ -66,10 +66,8 @@ import com.mapbox.maps.MapboxExperimental
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.runtime.collectAsState
-import com.mapbox.maps.ViewAnnotationAnchor
 import com.mapbox.maps.dsl.cameraOptions
 import com.mapbox.maps.extension.compose.annotation.ViewAnnotation
-import com.mapbox.maps.extension.compose.annotation.generated.CircleAnnotation
 import com.mapbox.maps.viewannotation.geometry
 import com.mapbox.maps.viewannotation.viewAnnotationOptions
 
@@ -180,7 +178,6 @@ fun ContactsMapCard(avatarUrl: String?, locationViewModel: LocationViewModel = v
                         options = viewAnnotationOptions {
                             geometry(Point.fromLngLat(loc.longitude, loc.latitude))
                             allowOverlap(true)
-                            //anchor(ViewAnnotationAnchor.BOTTOM)
                         }
                     ) {
                         UserLocationMarker(avatarUrl = avatarUrl)

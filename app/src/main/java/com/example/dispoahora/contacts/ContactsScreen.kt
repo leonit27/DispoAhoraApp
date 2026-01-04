@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dispoahora.PastelBlueBottom
 import com.example.dispoahora.PastelBlueTop
+import com.example.dispoahora.utils.SectionTitle
 
 val GradientBackground = Brush.verticalGradient(
     colors = listOf(PastelBlueTop, PastelBlueBottom)
@@ -37,7 +38,7 @@ fun ContactsScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(GradientBackground) // El fondo degradado de tu app
+            .background(GradientBackground)
             .padding(horizontal = 20.dp)
             .verticalScroll(rememberScrollState())
     ) {
@@ -60,21 +61,14 @@ fun ContactsScreen() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        ContactGroupCard(
-            title = "Favoritos",
-            count = "3 activos",
-            contacts = getFavoritesList()
-        )
+        SectionTitle("FAVORITOS")
+        ContactGroupCard(getFavoritesList())
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        ContactGroupCard(
-            title = "Cerca de ti",
-            count = "5 alrededor",
-            contacts = getNearbyList()
-        )
+        SectionTitle("CERCA DE TI")
 
-        Spacer(modifier = Modifier.height(100.dp)) // Espacio final para la BottomBar
+        Spacer(modifier = Modifier.height(50.dp))
     }
 }
 @Composable
@@ -87,7 +81,6 @@ fun SearchBarSection() {
             value = "",
             onValueChange = {},
             placeholder = { Text("Buscar nombre o alias", color = TextGray) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = TextGray) },
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White.copy(alpha = 0.7f),
@@ -104,7 +97,7 @@ fun SearchBarSection() {
 
         Button(
             onClick = { /**/ },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4F5BE)), // Verde lima pastel
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4F5BE)),
             shape = RoundedCornerShape(16.dp),
             contentPadding = PaddingValues(0.dp),
             modifier = Modifier
@@ -112,7 +105,7 @@ fun SearchBarSection() {
                 .shadow(2.dp, RoundedCornerShape(16.dp), spotColor = Color.Black.copy(0.05f))
         ) {
             Icon(
-                imageVector = Icons.Default.ShoppingCart,
+                imageVector = Icons.Default.Search,
                 contentDescription = "Filtro",
                 tint = Color(0xFF3F6212)
             )
@@ -122,24 +115,8 @@ fun SearchBarSection() {
 
 @Composable
 fun ContactGroupCard(
-    title: String,
-    count: String,
     contacts: List<ContactModel>
 ) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp, start = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Bottom
-        ) {
-            Column {
-                Text(title.uppercase(), fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextGray, letterSpacing = 1.sp)
-            }
-            Text(count, fontSize = 12.sp, color = TextGray)
-        }
-
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -158,7 +135,6 @@ fun ContactGroupCard(
                 }
             }
         }
-    }
 }
 
 @Composable
