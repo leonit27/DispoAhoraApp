@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -28,6 +30,7 @@ import java.security.MessageDigest
 import java.util.UUID
 import com.example.dispoahora.BuildConfig
 import com.example.dispoahora.R
+import com.mapbox.maps.extension.style.expressions.dsl.generated.image
 
 const val WEB_GOOGLE_CLIENT_ID = BuildConfig.WEB_GOOGLE_CLIENT_ID
 
@@ -70,6 +73,31 @@ fun LoginScreen(
             }
 
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Button(
+                    onClick = {
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.White,
+                        contentColor = Color.Black
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp)
+                ) {
+                    Icon(imageVector = Icons.Default.Email, contentDescription = null, modifier = Modifier.size(18.dp))
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Text(
+                        text = "Continuar con Email",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
                 Button(
                     onClick = {
                         performGoogleSignIn(context, coroutineScope, authViewModel)
