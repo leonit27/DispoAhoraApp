@@ -66,8 +66,12 @@ import com.mapbox.maps.MapboxExperimental
 import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.runtime.collectAsState
+import com.mapbox.maps.ViewAnnotationAnchor
 import com.mapbox.maps.dsl.cameraOptions
+import com.mapbox.maps.extension.compose.annotation.ViewAnnotation
 import com.mapbox.maps.extension.compose.annotation.generated.CircleAnnotation
+import com.mapbox.maps.viewannotation.geometry
+import com.mapbox.maps.viewannotation.viewAnnotationOptions
 
 val PastelBlueTop = Color(0xFFD3E1F0)
 val PastelBlueBottom = Color(0xFFA0B8D7)
@@ -124,7 +128,7 @@ fun Modifier.allowMapGestures(): Modifier {
 
 @OptIn(MapboxExperimental::class)
 @Composable
-fun ContactsMapCard(locationViewModel: LocationViewModel = viewModel()) {
+fun ContactsMapCard(avatarUrl: String?, locationViewModel: LocationViewModel = viewModel()) {
     val userLocation by locationViewModel.userLocation.collectAsState()
 
     val mapViewportState = rememberMapViewportState {
@@ -171,12 +175,16 @@ fun ContactsMapCard(locationViewModel: LocationViewModel = viewModel()) {
                     MapStyle(style = "mapbox://styles/mapbox/light-v11")
                 }
             ) {
-                userLocation?.let { location ->
-                    CircleAnnotation(
-                        point = Point.fromLngLat(location.longitude, location.latitude),
-                        circleRadius = 10.0,
-                        circleStrokeWidth = 2.0,
-                    )
+                userLocation?.let { loc ->
+                    ViewAnnotation(
+                        options = viewAnnotationOptions {
+                            geometry(Point.fromLngLat(loc.longitude, loc.latitude))
+                            allowOverlap(true)
+                            //anchor(ViewAnnotationAnchor.BOTTOM)
+                        }
+                    ) {
+                        UserLocationMarker(avatarUrl = avatarUrl)
+                    }
                 }
             }
         }
@@ -223,7 +231,7 @@ fun DispoAhoraScreen(username: String?, avatarUrl: String?, snackbarHostState: S
                 selectedActivity = nuevaActividad
         })
         Spacer(modifier = Modifier.height(20.dp))
-        ContactsMapCard()
+        ContactsMapCard(avatarUrl)
         Spacer(modifier = Modifier.height(20.dp))
     }
 }
