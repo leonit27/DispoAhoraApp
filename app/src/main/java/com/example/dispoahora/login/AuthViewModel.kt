@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.dispoahora.supabase.supabase
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
+import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.user.UserInfo
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.auth.status.SessionStatus
@@ -122,6 +123,34 @@ class AuthViewModel: ViewModel() {
                 }
             } catch (e: Exception) {
                 _authState.value = AuthState.Error("Error en login con Google: ${e.message}")
+            }
+        }
+    }
+
+    fun signInWithEmail(email: String, password: String) {
+        if (email.isBlank() || password.isBlank()) {
+            _authState.value = AuthState.Error("Email y contraseña son obligatorios")
+            return
+        }
+
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+            try {
+                supabase.auth.signInWith(Email) {
+                    this.email = email
+                    this.password = password
+                }
+
+                val user = supabase.auth.currentUserOrNull()
+
+                if (user != null) {
+                    getUserDataAndNavigate(user)
+                } else {
+                    _authState.value = AuthState.Error("No se pudieron obtener los datos del usuario.")
+                }
+
+            } catch (e: Exception) {
+                _authState.value = AuthState.Error(e.localizedMessage ?: "Error al iniciar sesión")
             }
         }
     }

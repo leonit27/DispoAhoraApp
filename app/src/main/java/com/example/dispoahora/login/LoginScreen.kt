@@ -8,7 +8,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,7 +34,6 @@ import java.security.MessageDigest
 import java.util.UUID
 import com.example.dispoahora.BuildConfig
 import com.example.dispoahora.R
-import com.mapbox.maps.extension.style.expressions.dsl.generated.image
 
 const val WEB_GOOGLE_CLIENT_ID = BuildConfig.WEB_GOOGLE_CLIENT_ID
 
@@ -41,102 +44,112 @@ fun LoginScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color(0xFF0B0F19)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
+    var showEmailLogin by remember { mutableStateOf(false) }
+
+    if (showEmailLogin) {
+        EmailLoginScreen(
+            authViewModel = authViewModel,
+            onBack = { showEmailLogin = false }
+        )
+    } else {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = Color(0xFF0B0F19)
         ) {
-            Spacer(modifier = Modifier.height(64.dp))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.SpaceBetween
+            ) {
+                Spacer(modifier = Modifier.height(64.dp))
 
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "DISPOAHORA",
-                    color = Color.White,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = 2.sp
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = "Encuentros espontáneos,\nsin fatiga de planificación.",
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center,
-                    fontSize = 16.sp,
-                    lineHeight = 24.sp
-                )
-            }
-
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Button(
-                    onClick = {
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(54.dp)
-                ) {
-                    Icon(imageVector = Icons.Default.Email, contentDescription = null, modifier = Modifier.size(18.dp))
-
-                    Spacer(modifier = Modifier.width(12.dp))
-
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = "Continuar con Email",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        text = "DISPOAHORA",
+                        color = Color.White,
+                        fontSize = 32.sp,
+                        fontWeight = FontWeight.Black,
+                        letterSpacing = 2.sp
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "Encuentros espontáneos,\nsin fatiga de planificación.",
+                        color = Color.Gray,
+                        textAlign = TextAlign.Center,
+                        fontSize = 16.sp,
+                        lineHeight = 24.sp
                     )
                 }
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Button(
-                    onClick = {
-                        performGoogleSignIn(context, coroutineScope, authViewModel)
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.White,
-                        contentColor = Color.Black
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(54.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_google),
-                        contentDescription = null,
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Button(
+                        onClick = {
+                            showEmailLogin = true
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = Color.Black
+                        ),
+                        shape = RoundedCornerShape(12.dp),
                         modifier = Modifier
-                            .height(30.dp)
-                            .width(30.dp)
-                    )
+                            .fillMaxWidth()
+                            .height(54.dp)
+                    ) {
+                        Icon(imageVector = Icons.Default.Email, contentDescription = null, modifier = Modifier.size(18.dp))
 
-                    Spacer(modifier = Modifier.width(12.dp))
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Text(
+                            text = "Continuar con Email",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Button(
+                        onClick = {
+                            performGoogleSignIn(context, coroutineScope, authViewModel)
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.White,
+                            contentColor = Color.Black
+                        ),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(54.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_google),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .height(30.dp)
+                                .width(30.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Text(
+                            text = "Continuar con Google",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(24.dp))
 
                     Text(
-                        text = "Continuar con Google",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 16.sp
+                        text = "Al registrarte, aceptas nuestros términos y políticas de privacidad.",
+                        color = Color.Gray.copy(alpha = 0.5f),
+                        fontSize = 11.sp,
+                        textAlign = TextAlign.Center,
+                        lineHeight = 14.sp
                     )
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                Text(
-                    text = "Al registrarte, aceptas nuestros términos y políticas de privacidad.",
-                    color = Color.Gray.copy(alpha = 0.5f),
-                    fontSize = 11.sp,
-                    textAlign = TextAlign.Center,
-                    lineHeight = 14.sp
-                )
             }
         }
     }
