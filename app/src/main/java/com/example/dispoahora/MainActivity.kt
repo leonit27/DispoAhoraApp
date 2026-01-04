@@ -63,7 +63,11 @@ import java.time.temporal.ChronoUnit
 
 import com.example.dispoahora.utils.*
 import com.mapbox.maps.MapboxExperimental
+import com.mapbox.maps.plugin.animation.MapAnimationOptions
 import kotlinx.coroutines.CoroutineScope
+import androidx.compose.runtime.collectAsState
+import com.mapbox.maps.dsl.cameraOptions
+import com.mapbox.maps.extension.compose.annotation.generated.CircleAnnotation
 
 val PastelBlueTop = Color(0xFFD3E1F0)
 val PastelBlueBottom = Color(0xFFA0B8D7)
@@ -120,12 +124,27 @@ fun Modifier.allowMapGestures(): Modifier {
 
 @OptIn(MapboxExperimental::class)
 @Composable
-fun ContactsMapCard() {
+fun ContactsMapCard(locationViewModel: LocationViewModel = viewModel()) {
+    val userLocation by locationViewModel.userLocation.collectAsState()
+
     val mapViewportState = rememberMapViewportState {
         setCameraOptions {
             zoom(14.0)
             center(Point.fromLngLat(-3.7038, 40.4168))
             pitch(0.0)
+        }
+    }
+
+    LaunchedEffect(userLocation) {
+        userLocation?.let { location ->
+            android.util.Log.d("MAPA_DEBUG", "Ubicación recibida: ${location.latitude}")
+            mapViewportState.flyTo(
+                cameraOptions = cameraOptions {
+                    center(Point.fromLngLat(location.longitude, location.latitude))
+                    zoom(14.0)
+                },
+                animationOptions = MapAnimationOptions.mapAnimationOptions { duration(2000) }
+            )
         }
     }
 
@@ -152,8 +171,14 @@ fun ContactsMapCard() {
                     MapStyle(style = "mapbox://styles/mapbox/light-v11")
                 }
             ) {
+                userLocation?.let { location ->
+                    CircleAnnotation(
+                        point = Point.fromLngLat(location.longitude, location.latitude),
+                        circleRadius = 10.0,
+                        circleStrokeWidth = 2.0,
+                    )
+                }
             }
-
         }
     }
 }
