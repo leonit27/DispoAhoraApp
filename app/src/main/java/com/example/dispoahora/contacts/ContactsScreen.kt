@@ -67,6 +67,7 @@ fun ContactsScreen() {
         Spacer(modifier = Modifier.height(20.dp))
 
         SectionTitle("CERCA DE TI")
+        ContactGroupCard(getNearbyList())
 
         Spacer(modifier = Modifier.height(50.dp))
     }
