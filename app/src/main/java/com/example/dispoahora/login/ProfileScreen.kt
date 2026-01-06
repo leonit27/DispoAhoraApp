@@ -42,8 +42,11 @@ fun ProfileScreen(
     username: String?,
     avatarUrl: String?,
     email: String?,
-    onSignOut: () -> Unit
+    onSignOut: () -> Unit,
+    authViewModel: AuthViewModel = viewModel()
 ) {
+    val stats by authViewModel.userStats.collectAsState()
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -78,11 +81,11 @@ fun ProfileScreen(
             SectionTitle("RED Y VISIBILIDAD")
             Spacer(modifier = Modifier.height(8.dp))
             SectionCard {
-                InfoItem(label = "Seguidores", value = "Personas que pueden ver tu estado público", badgeCount = 128)
+                InfoItem(label = "Seguidores", value = "Personas que pueden ver tu estado público", badgeCount = stats.followers)
                 HorizontalDivider(color = Color.Black.copy(alpha = 0.05f))
-                InfoItem(label = "Siguiendo", value = "Contactos de los que ves disponibilidad", badgeCount = 94)
+                InfoItem(label = "Siguiendo", value = "Contactos de los que ves disponibilidad", badgeCount = stats.following)
                 HorizontalDivider(color = Color.Black.copy(alpha = 0.05f))
-                InfoItem(label = "Círculo cercano", value = "Más prioridad en estados y coincidencias", badgeCount = 18)
+                InfoItem(label = "Círculo cercano", value = "Más prioridad en estados y coincidencias", badgeCount = stats.cercanos)
                 HorizontalDivider(color = Color.Black.copy(alpha = 0.05f))
                 InfoItem(label = "Bloqueados", value = "Personas que no podrán verte ni escribirte")
             }
