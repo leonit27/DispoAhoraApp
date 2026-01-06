@@ -41,6 +41,7 @@ fun ContactsScreen(authViewModel: AuthViewModel = viewModel()) {
     val realUsers by authViewModel.realUsers.collectAsState()
 
     var searchQuery by remember { mutableStateOf("") }
+    val isSearching = searchQuery.isNotBlank()
 
     LaunchedEffect(Unit) {
         authViewModel.fetchContacts()
@@ -70,25 +71,44 @@ fun ContactsScreen(authViewModel: AuthViewModel = viewModel()) {
 
         SearchBarSection(
             query = searchQuery,
-            onQueryChange = { searchQuery = it },
+            onQueryChange = {
+                searchQuery = it
+                if (it.isBlank()) authViewModel.fetchContacts() },
             onSearchClick = { authViewModel.searchContacts(searchQuery) }
         )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        SectionTitle("FAVORITOS")
+        if (isSearching) {
+            SectionTitle("RESULTADOS DE BÚSQUEDA")
 
-        if (realUsers.isEmpty()) {
-            Text("No se encontraron usuarios", color = TextGray, modifier = Modifier.padding(16.dp))
+            if (realUsers.isEmpty()) {
+                Text(
+                    "No se encontraron coincidencias para \"$searchQuery\"",
+                    color = TextGray,
+                    modifier = Modifier.padding(16.dp),
+                    fontSize = 14.sp
+                )
+            } else {
+                ContactGroupCard(realUsers)
+            }
+
         } else {
-            ContactGroupCard(realUsers)
+            SectionTitle("FAVORITOS")
+
+            if (realUsers.isEmpty()) {
+                Text("Cargando favoritos...", color = TextGray, modifier = Modifier.padding(16.dp))
+            } else {
+                ContactGroupCard(realUsers)
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            SectionTitle("CERCA DE TI")
+
+            Spacer(modifier = Modifier.height(50.dp))
+
         }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        SectionTitle("CERCA DE TI")
-
-        Spacer(modifier = Modifier.height(50.dp))
     }
 }
 @Composable
