@@ -39,7 +39,9 @@ fun LocationSelectionDialog(
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Button(
-                    onClick = onAutoDetect,
+                    onClick = {
+                        onAutoDetect()
+                    },
                     modifier = Modifier.fillMaxWidth(),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE0F2FE))
                 ) {
@@ -61,7 +63,9 @@ fun LocationSelectionDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                if (manualText.isNotBlank()) onManualEntry(manualText)
+                if (manualText.isNotBlank()) {
+                    onManualEntry(manualText)
+                }
             }) {
                 Text("Establecer Manual")
             }

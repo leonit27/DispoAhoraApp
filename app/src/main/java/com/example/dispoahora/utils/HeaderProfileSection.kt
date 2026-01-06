@@ -168,7 +168,7 @@ fun HeaderProfileSection(
 
     if (showLocationDialog) {
         LocationSelectionDialog(
-            onDismiss = {},
+            onDismiss = { showLocationDialog = false },
             onAutoDetect = {
                 permissionLauncher.launch(
                     arrayOf(
