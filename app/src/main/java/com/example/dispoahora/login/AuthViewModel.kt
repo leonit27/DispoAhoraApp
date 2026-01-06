@@ -22,7 +22,7 @@ sealed class AuthState {
     object Loading: AuthState()
     object SignedOut: AuthState()
 
-    data class SignedIn(val userName: String?, val avatarUrl: String?): AuthState()
+    data class SignedIn(val userName: String?, val avatarUrl: String?, val email: String?): AuthState()
     data class Error(val message: String): AuthState()
 }
 
@@ -100,7 +100,9 @@ class AuthViewModel: ViewModel() {
         val avatarUrl = metadata?.get("avatar_url")?.jsonPrimitive?.contentOrNull
             ?: metadata?.get("picture")?.jsonPrimitive?.contentOrNull
 
-        _authState.value = AuthState.SignedIn(userName = formattedName, avatarUrl = avatarUrl)
+        val userEmail = user.email
+
+        _authState.value = AuthState.SignedIn(userName = formattedName, avatarUrl = avatarUrl, email = userEmail)
     }
 
     fun signInWithGoogleIdToken(idToken: String, rawNonce: String) {

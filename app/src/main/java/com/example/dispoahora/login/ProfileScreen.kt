@@ -21,7 +21,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -38,7 +37,7 @@ val DangerText = Color(0xFFDC2626)
 fun ProfileScreen(
     username: String?,
     avatarUrl: String?,
-    email: String,
+    email: String?,
     onSignOut: () -> Unit
 ) {
     Box(

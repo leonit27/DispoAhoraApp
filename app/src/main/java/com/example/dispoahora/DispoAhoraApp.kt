@@ -107,7 +107,7 @@ fun DispoAhoraApp(authViewModel: AuthViewModel) {
             composable(Screen.Profile.route) {
                 val user = (authState as? AuthState.SignedIn)?.userName ?: "Usuario"
                 val avatar = (authState as? AuthState.SignedIn)?.avatarUrl
-                val email = "usuario@ejemplo.com"
+                val email = (authState as? AuthState.SignedIn)?.email
 
                 ProfileScreen(
                     username = user,
