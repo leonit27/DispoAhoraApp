@@ -27,17 +27,17 @@ espontáneas (café, deporte, charlas) basándose en su ubicación actual.
 
 ## Capturas de pantalla
 
-| Acceso y Registro | | | |
+| | | | |
 | :---: | :---: | :---: | :---: |
 | ![Login](app/src/main/java/com/example/dispoahora/images/Login.jpg) | ![Register](app/src/main/java/com/example/dispoahora/images/Register.jpg) | ![Perfil](app/src/main/java/com/example/dispoahora/images/Perfil.jpg) | ![Perfil2](app/src/main/java/com/example/dispoahora/images/Perfil2.jpg) |
 | **Login** | **Registro** | **Perfil Usuario** | **Detalles Perfil** |
 
-| Gestión de Estado | | | |
+| | | | |
 | :---: | :---: | :---: | :---: |
 | ![PantallaPrincipal](app/src/main/java/com/example/dispoahora/images/PantallaPrincipal.jpg) | ![EstadoLibre](app/src/main/java/com/example/dispoahora/images/EstadoLibre.jpg) | ![EstadoOcupado](app/src/main/java/com/example/dispoahora/images/EstadoOcupado.jpg) | ![NuevaActividad](app/src/main/java/com/example/dispoahora/images/NuevaActividad.jpg) |
 | **Inicio** | **Modo Libre** | **Modo Ocupado** | **Nueva Actividad** |
 
-| Social y Ubicación | | | |
+| | | | |
 | :---: | :---: | :---: | :---: |
 | ![Contactos](app/src/main/java/com/example/dispoahora/images/Contactos.jpg) | ![Búsqueda](app/src/main/java/com/example/dispoahora/images/Búsqueda.jpg) | ![DropDownMenu](app/src/main/java/com/example/dispoahora/images/DropDownMenu.jpg) | ![Mapa](app/src/main/java/com/example/dispoahora/images/Mapa.jpg) |
 | **Lista Contactos** | **Buscador** | **Acciones** | **Mapa Real-Time** |
