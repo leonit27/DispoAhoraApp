@@ -14,6 +14,8 @@ import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -23,6 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.example.dispoahora.GradientBackground
 import com.example.dispoahora.TextDark
@@ -112,7 +115,9 @@ fun ProfileScreen(
 }
 
 @Composable
-fun MainProfileCard(username: String?, avatarUrl: String?) {
+fun MainProfileCard(username: String?, avatarUrl: String?, authViewModel: AuthViewModel = viewModel()) {
+    val stats by authViewModel.userStats.collectAsState()
+
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.7f)),
         shape = RoundedCornerShape(24.dp),
@@ -166,9 +171,9 @@ fun MainProfileCard(username: String?, avatarUrl: String?) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
-                    ProfileStat("128", "Seguidores")
-                    ProfileStat("94", "Siguiendo")
-                    ProfileStat("18", "Círculo")
+                    ProfileStat(stats.followers.toString(), "Seguidores")
+                    ProfileStat(stats.following.toString(), "Siguiendo")
+                    ProfileStat(stats.cercanos.toString(), "Círculo")
                 }
 
                 Button(

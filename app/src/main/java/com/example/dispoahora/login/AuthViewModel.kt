@@ -9,8 +9,11 @@ import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.user.UserInfo
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.auth.status.SessionStatus
+import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Count
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -26,9 +29,18 @@ sealed class AuthState {
     data class Error(val message: String): AuthState()
 }
 
+data class UserStats(
+    val followers: Int = 0,
+    val following: Int = 0,
+    val cercanos: Int = 0
+)
+
 class AuthViewModel: ViewModel() {
     private val _authState = MutableStateFlow<AuthState>(AuthState.Loading)
     val authState: StateFlow<AuthState> = _authState
+
+    private val _userStats = MutableStateFlow(UserStats())
+    val userStats: StateFlow<UserStats> = _userStats.asStateFlow()
 
     init {
         checkCurrentSession()
@@ -102,7 +114,50 @@ class AuthViewModel: ViewModel() {
 
         val userEmail = user.email
 
+        fetchUserStats(user.id)
+
         _authState.value = AuthState.SignedIn(userName = formattedName, avatarUrl = avatarUrl, email = userEmail)
+    }
+
+    fun fetchUserStats(userId: String) {
+        viewModelScope.launch {
+            try {
+                val followersResult = supabase.from("user_follows").select {
+                    filter { eq("following_id", userId) }
+                    count(Count.EXACT)
+                }
+                val followersCount = followersResult.countOrNull() ?: 0L
+
+                val followingResult = supabase.from("user_follows").select {
+                    filter { eq("follower_id", userId) }
+                    count(Count.EXACT)
+                }
+                val followingCount = followingResult.countOrNull() ?: 0L
+
+                val circleResult = supabase.from("relationships").select {
+                    filter {
+                        and {
+                            or {
+                                eq("requester_id", userId)
+                                eq("receiver_id", userId)
+                            }
+                            eq("status", "accepted")
+                        }
+                    }
+                    count(Count.EXACT)
+                }
+                val circleCount = circleResult.countOrNull() ?: 0L
+
+                _userStats.value = UserStats(
+                    followers = followersCount.toInt(),
+                    following = followingCount.toInt(),
+                    cercanos = circleCount.toInt()
+                )
+
+            } catch (e: Exception) {
+                android.util.Log.e("STATS_ERROR", "Error: ${e.message}")
+            }
+        }
     }
 
     fun signInWithGoogleIdToken(idToken: String, rawNonce: String) {
