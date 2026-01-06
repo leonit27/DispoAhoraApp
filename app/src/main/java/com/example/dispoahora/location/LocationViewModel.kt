@@ -22,6 +22,9 @@ class LocationViewModel(application: Application) : AndroidViewModel(application
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
+    private val _locationState = MutableStateFlow<Location?>(null)
+    val locationState: StateFlow<Location?> = _locationState.asStateFlow()
+
     fun detectLocation() {
         viewModelScope.launch {
             _isLoading.value = true

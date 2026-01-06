@@ -11,7 +11,9 @@ import io.github.jan.supabase.auth.user.UserInfo
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.query.Count
+import io.github.jan.supabase.postgrest.rpc
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -47,6 +49,9 @@ class AuthViewModel: ViewModel() {
 
     private val _realUsers = MutableStateFlow<List<ContactModel>>(emptyList())
     val realUsers: StateFlow<List<ContactModel>> = _realUsers.asStateFlow()
+
+    private val _nearbyUsers = MutableStateFlow<List<ContactModel>>(emptyList())
+    val nearbyUsers: StateFlow<List<ContactModel>> = _nearbyUsers.asStateFlow()
 
     init {
         checkCurrentSession()
@@ -218,6 +223,47 @@ class AuthViewModel: ViewModel() {
                 )
 
                 fetchUserStats(myUserId)
+
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    fun updateLocationInDB(latitude: Double?, longitude: Double?, isLibre: Boolean) {
+        val userId = supabase.auth.currentUserOrNull()?.id ?: return
+
+        viewModelScope.launch {
+            try {
+                val pointWKT = if (isLibre && latitude != null && longitude != null) {
+                    "POINT($longitude $latitude)"
+                } else {
+                    null
+                }
+
+                supabase.from("profiles").update(
+                    mapOf("location" to pointWKT)
+                ) {
+                    filter { eq("id", userId) }
+                }
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    fun fetchNearbyUsers(lat: Double, lng: Double) {
+        viewModelScope.launch {
+            try {
+                val response = supabase.postgrest.rpc(
+                    "get_nearby_users",
+                    mapOf(
+                        "lat" to lat,
+                        "lng" to lng,
+                        "radius_meters" to 5000.0
+                    )
+                ).decodeList<ContactModel>()
+
+                val myId = supabase.auth.currentUserOrNull()?.id
+                _nearbyUsers.value = response.filter { it.id != myId && it.status == "Libre" }
 
             } catch (_: Exception) {
             }

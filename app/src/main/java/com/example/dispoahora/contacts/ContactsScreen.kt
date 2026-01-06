@@ -30,6 +30,7 @@ import coil.compose.AsyncImage
 import com.example.dispoahora.AccentBlue
 import com.example.dispoahora.PastelBlueBottom
 import com.example.dispoahora.PastelBlueTop
+import com.example.dispoahora.location.LocationViewModel
 import com.example.dispoahora.login.AuthViewModel
 import com.example.dispoahora.utils.SectionTitle
 import kotlinx.serialization.Serializable
@@ -43,14 +44,23 @@ val TextGray = Color(0xFF6B7280)
 val StatusGreen = Color(0xFF10B981)
 
 @Composable
-fun ContactsScreen(authViewModel: AuthViewModel = viewModel()) {
+fun ContactsScreen(authViewModel: AuthViewModel = viewModel(), locationViewModel: LocationViewModel = viewModel()) {
     val realUsers by authViewModel.realUsers.collectAsState()
 
     var searchQuery by remember { mutableStateOf("") }
     val isSearching = searchQuery.isNotBlank()
 
+    val nearbyUsers by authViewModel.nearbyUsers.collectAsState()
+    val locationState by locationViewModel.locationState.collectAsState()
+
     LaunchedEffect(Unit) {
         authViewModel.fetchContacts()
+    }
+
+    LaunchedEffect(locationState) {
+        locationState?.let { loc ->
+            authViewModel.fetchNearbyUsers(loc.latitude, loc.longitude)
+        }
     }
 
     Column(
@@ -100,10 +110,10 @@ fun ContactsScreen(authViewModel: AuthViewModel = viewModel()) {
             }
 
         } else {
-            SectionTitle("FAVORITOS")
+            SectionTitle("SUGERENCIAS")
 
             if (realUsers.isEmpty()) {
-                Text("Cargando favoritos...", color = TextGray, modifier = Modifier.padding(16.dp))
+                Text("Cargando sugerencias...", color = TextGray, modifier = Modifier.padding(16.dp))
             } else {
                 ContactGroupCard(realUsers)
             }
@@ -111,6 +121,17 @@ fun ContactsScreen(authViewModel: AuthViewModel = viewModel()) {
             Spacer(modifier = Modifier.height(20.dp))
 
             SectionTitle("CERCA DE TI")
+
+            if (nearbyUsers.isEmpty()) {
+                Text(
+                    "No hay nadie disponible a menos de 5km.",
+                    color = TextGray,
+                    modifier = Modifier.padding(16.dp),
+                    fontSize = 14.sp
+                )
+            } else {
+                ContactGroupCard(nearbyUsers)
+            }
 
             Spacer(modifier = Modifier.height(50.dp))
 

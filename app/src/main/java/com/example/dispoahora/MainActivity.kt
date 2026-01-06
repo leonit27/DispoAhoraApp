@@ -49,10 +49,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalView
 
 import androidx.compose.runtime.*
-import kotlinx.coroutines.delay
 import java.time.Instant
-import java.time.Duration
-import java.time.format.DateTimeParseException
 
 import androidx.compose.runtime.rememberCoroutineScope
 import com.example.dispoahora.supabase.supabase
@@ -190,8 +187,10 @@ fun ContactsMapCard(avatarUrl: String?, locationViewModel: LocationViewModel = v
 
 @SuppressLint("SuspiciousIndentation")
 @Composable
-fun DispoAhoraScreen(username: String?, avatarUrl: String?, snackbarHostState: SnackbarHostState,
-                     coroutineScope: CoroutineScope, onOpenProfile: () -> Unit) {
+fun DispoAhoraScreen(
+    username: String?, avatarUrl: String?, snackbarHostState: SnackbarHostState,
+    coroutineScope: CoroutineScope, onOpenProfile: () -> Unit, authViewModel: AuthViewModel = viewModel()
+) {
     var isMapInteracting by remember { mutableStateOf(false) }
     val locationViewModel: LocationViewModel = viewModel()
 
@@ -199,6 +198,23 @@ fun DispoAhoraScreen(username: String?, avatarUrl: String?, snackbarHostState: S
 
     val currentUser = remember { supabase.auth.currentUserOrNull() }
     val myUserId = currentUser?.id ?: ""
+
+    val locationState by locationViewModel.locationState.collectAsState()
+
+    val isCurrentlyLibre = true
+
+    LaunchedEffect(locationState, isCurrentlyLibre) {
+        val loc = locationState
+        if (loc != null) {
+            authViewModel.updateLocationInDB(
+                latitude = loc.latitude,
+                longitude = loc.longitude,
+                isLibre = isCurrentlyLibre
+            )
+        } else if (!isCurrentlyLibre) {
+            authViewModel.updateLocationInDB(null, null, false)
+        }
+    }
 
     Column(
         modifier = Modifier

@@ -100,7 +100,7 @@ fun DispoAhoraApp(authViewModel: AuthViewModel) {
                     avatar,
                     snackbarHostState = snackbarHostState,
                     coroutineScope = scope,
-                    onOpenProfile = { navController.navigate(Screen.Profile.route) }
+                    onOpenProfile = { navController.navigate(Screen.Profile.route) },
                 )
             }
 
