@@ -27,6 +27,7 @@ import coil.compose.AsyncImage
 import com.example.dispoahora.GradientBackground
 import com.example.dispoahora.TextDark
 import com.example.dispoahora.TextGrayLight
+import com.example.dispoahora.utils.SectionTitle
 
 val EditButtonBg = Color(0xFFE0E7FF)
 val EditButtonText = Color(0xFF4F46E5)
@@ -59,7 +60,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            SectionHeader(title = "Cuenta", subtitle = "Gestiona tus datos básicos de acceso")
+            SectionTitle("CUENTA")
             Spacer(modifier = Modifier.height(8.dp))
             SectionCard {
                 InfoItem(label = "Nombre", value = username)
@@ -71,7 +72,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            SectionHeader(title = "Red y visibilidad", subtitle = "Decide quién puede verte y cómo te encuentran")
+            SectionTitle("RED Y VISIBILIDAD")
             Spacer(modifier = Modifier.height(8.dp))
             SectionCard {
                 InfoItem(label = "Seguidores", value = "Personas que pueden ver tu estado público", badgeCount = 128)
@@ -85,12 +86,10 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            SectionHeader(title = "Seguridad y sesión", subtitle = "Controla tu acceso y dónde has iniciado sesión")
+            SectionTitle("SEGURIDAD Y SESIÓN")
             Spacer(modifier = Modifier.height(12.dp))
 
             ActionButton(text = "Cambiar contraseña", icon = Icons.Default.Edit)
-            Spacer(modifier = Modifier.height(12.dp))
-            ActionButton(text = "Dispositivos con sesión iniciada", icon = Icons.Outlined.CheckCircle)
             Spacer(modifier = Modifier.height(12.dp))
 
             Button(
@@ -194,14 +193,6 @@ fun ProfileStat(count: String, label: String) {
     Column {
         Text(label, fontSize = 11.sp, color = TextGrayLight)
         Text(count, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextDark)
-    }
-}
-
-@Composable
-fun SectionHeader(title: String, subtitle: String) {
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-        Text(title, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = TextDark)
-        Text(subtitle, fontSize = 10.sp, color = TextGrayLight, modifier = Modifier.widthIn(max = 180.dp), lineHeight = 12.sp, textAlign = androidx.compose.ui.text.style.TextAlign.End)
     }
 }
 
