@@ -203,6 +203,27 @@ class AuthViewModel: ViewModel() {
         }
     }
 
+    fun followUser(targetUserId: String) {
+        val myUserId = supabase.auth.currentUserOrNull()?.id ?: return
+
+        if (myUserId == targetUserId) return
+
+        viewModelScope.launch {
+            try {
+                supabase.from("user_follows").insert(
+                    mapOf(
+                        "follower_id" to myUserId,
+                        "following_id" to targetUserId
+                    )
+                )
+
+                fetchUserStats(myUserId)
+
+            } catch (_: Exception) {
+            }
+        }
+    }
+
     fun signInWithGoogleIdToken(idToken: String, rawNonce: String) {
         viewModelScope.launch {
             try {

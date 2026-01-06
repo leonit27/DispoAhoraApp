@@ -1,12 +1,17 @@
 package com.example.dispoahora.contacts
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -22,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.dispoahora.AccentBlue
 import com.example.dispoahora.PastelBlueBottom
 import com.example.dispoahora.PastelBlueTop
 import com.example.dispoahora.login.AuthViewModel
@@ -181,62 +187,93 @@ fun ContactGroupCard(
         }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun ContactItemRow(contact: ContactModel) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box {
-            if (!contact.avatar_url.isNullOrBlank()) {
-                AsyncImage(
-                    model = contact.avatar_url,
-                    contentDescription = null,
-                    modifier = Modifier.size(48.dp).clip(CircleShape),
-                    contentScale = ContentScale.Crop
+fun ContactItemRow(contact: ContactModel, authViewModel: AuthViewModel = viewModel()) {
+    var showMenu by remember { mutableStateOf(false) }
+
+    Box {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .combinedClickable(
+                    onClick = { /**/ },
+                    onLongClick = { showMenu = true }
                 )
-            } else {
-                Box(
-                    modifier = Modifier.size(48.dp).clip(CircleShape).background(Color(0xFFE0E7FF)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(text = contact.full_name.take(1), fontWeight = FontWeight.Bold, color = Color(0xFF4338CA))
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box {
+                if (!contact.avatar_url.isNullOrBlank()) {
+                    AsyncImage(
+                        model = contact.avatar_url,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp).clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier.size(48.dp).clip(CircleShape).background(Color(0xFFE0E7FF)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = contact.full_name.take(1), fontWeight = FontWeight.Bold, color = Color(0xFF4338CA))
+                    }
+                }
+
+                if (contact.status == "Libre") {
+                    Box(
+                        modifier = Modifier.size(14.dp).clip(CircleShape).background(Color.White).padding(2.dp)
+                            .clip(CircleShape).background(StatusGreen).align(Alignment.BottomEnd)
+                    )
                 }
             }
 
-            if (contact.status == "Libre") {
-                Box(
-                    modifier = Modifier.size(14.dp).clip(CircleShape).background(Color.White).padding(2.dp)
-                        .clip(CircleShape).background(StatusGreen).align(Alignment.BottomEnd)
+            Spacer(modifier = Modifier.width(14.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = contact.full_name,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = TextDark
+                )
+                Text(
+                    text = contact.activity ?: "Sin actividad reciente",
+                    fontSize = 13.sp,
+                    color = TextGray,
+                    maxLines = 1
                 )
             }
-        }
 
-        Spacer(modifier = Modifier.width(14.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = contact.full_name,
+                text = contact.status ?: "Ocupado",
+                fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = TextDark
-            )
-            Text(
-                text = contact.activity ?: "Sin actividad reciente",
-                fontSize = 13.sp,
-                color = TextGray,
-                maxLines = 1
+                color = if(contact.status == "Libre") StatusGreen else TextGray
             )
         }
 
-        Text(
-            text = contact.status ?: "Ocupado",
-            fontSize = 12.sp,
-            fontWeight = FontWeight.Bold,
-            color = if(contact.status == "Libre") StatusGreen else TextGray
-        )
+        DropdownMenu(
+            expanded = showMenu,
+            onDismissRequest = { showMenu = false },
+            modifier = Modifier.background(Color.White, RoundedCornerShape(12.dp))
+        ) {
+            DropdownMenuItem(
+                text = { Text("Seguir", color = TextDark) },
+                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = AccentBlue) },
+                onClick = {
+                    showMenu = false
+                    authViewModel.followUser(contact.id)
+                }
+            )
+            DropdownMenuItem(
+                text = { Text("Bloquear", color = Color.Red) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = Color.Red) },
+                onClick = {
+                    showMenu = false
+                }
+            )
+        }
     }
 }
 
