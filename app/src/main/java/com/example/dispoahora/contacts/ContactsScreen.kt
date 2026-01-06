@@ -194,7 +194,7 @@ fun ContactItemRow(contact: ContactModel) {
                 color = TextDark
             )
             Text(
-                text = contact.bio ?: "Sin actividad reciente",
+                text = contact.activity ?: "Sin actividad reciente",
                 fontSize = 13.sp,
                 color = TextGray,
                 maxLines = 1
@@ -216,5 +216,5 @@ data class ContactModel(
     val full_name: String,
     val avatar_url: String? = null,
     val status: String? = "Desconectado",
-    val bio: String? = null
+    val activity: String? = null
 )

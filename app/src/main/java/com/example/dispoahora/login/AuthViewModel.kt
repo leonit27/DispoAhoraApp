@@ -167,21 +167,15 @@ class AuthViewModel: ViewModel() {
     fun fetchContacts() {
         viewModelScope.launch {
             try {
-                // Log para saber que la función se ejecuta
-                android.util.Log.d("SUPABASE_DEBUG", "Iniciando descarga de contactos...")
-
-                val result = supabase.from("profiles") // Verifica que tu tabla se llame "profiles"
-                    .select() {
+                val result = supabase.from("profiles")
+                    .select {
                         limit(3)
                     }
                     .decodeList<ContactModel>()
 
-                android.util.Log.d("SUPABASE_DEBUG", "Usuarios recibidos: ${result.size}")
                 _realUsers.value = result
 
             } catch (e: Exception) {
-                // Esto te dirá en el Logcat si hay un error de red o de tabla
-                android.util.Log.e("SUPABASE_DEBUG", "Error: ${e.message}")
                 e.printStackTrace()
             }
         }

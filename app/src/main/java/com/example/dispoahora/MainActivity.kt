@@ -212,6 +212,7 @@ fun DispoAhoraScreen(username: String?, avatarUrl: String?, snackbarHostState: S
 
         Spacer(modifier = Modifier.height(20.dp))
         MainStatusCard(myUserId = myUserId,
+            selectedActivity = selectedActivity,
             onStatusChanged = { nuevoEstado ->
                 if (nuevoEstado) {
                     coroutineScope.launch {
@@ -234,7 +235,7 @@ fun DispoAhoraScreen(username: String?, avatarUrl: String?, snackbarHostState: S
 }
 
 @Composable
-fun MainStatusCard(myUserId: String, onStatusChanged: (Boolean) -> Unit) {
+fun MainStatusCard(myUserId: String, selectedActivity: String, onStatusChanged: (Boolean) -> Unit) {
     var isLibre by remember { mutableStateOf(true) }
     var expiresAt by remember { mutableStateOf<String?>(null) }
     var isLoading by remember { mutableStateOf(true) }
@@ -269,7 +270,6 @@ fun MainStatusCard(myUserId: String, onStatusChanged: (Boolean) -> Unit) {
                     expiresAt = expiryEnBD
                 }
             } catch (e: Exception) {
-                android.util.Log.e("DISPO_LOAD", "Error cargando estado: ${e.message}")
             } finally {
                 isLoading = false
             }
@@ -334,8 +334,6 @@ fun MainStatusCard(myUserId: String, onStatusChanged: (Boolean) -> Unit) {
                     onStatusChanged(newState)
 
                     scope.launch {
-                        android.util.Log.d("DISPO_DEBUG", "Intentando actualizar. ID Usuario: '$myUserId'")
-
                         try {
                             if (newState) {
                                 val newExpiryTime = Instant.now()
@@ -344,12 +342,11 @@ fun MainStatusCard(myUserId: String, onStatusChanged: (Boolean) -> Unit) {
 
                                 expiresAt = newExpiryTime
 
-                                android.util.Log.d("DISPO_DEBUG", "Enviando estado LIBRE hasta: $newExpiryTime")
-
                                 supabase.from("profiles").update(
                                     mapOf(
                                         "status" to "Libre",
-                                        "status_expires_at" to newExpiryTime
+                                        "status_expires_at" to newExpiryTime,
+                                        "activity" to selectedActivity
                                     )
                                 ) {
                                     filter {
@@ -359,12 +356,12 @@ fun MainStatusCard(myUserId: String, onStatusChanged: (Boolean) -> Unit) {
 
                             } else {
                                 expiresAt = null
-                                android.util.Log.d("DISPO_DEBUG", "Enviando estado OCUPADO")
 
                                 supabase.from("profiles").update(
                                     mapOf(
                                         "status" to "Ocupado",
-                                        "status_expires_at" to null
+                                        "status_expires_at" to null,
+                                        "activity" to null
                                     )
                                 ) {
                                     filter {
@@ -391,42 +388,4 @@ fun MainStatusCard(myUserId: String, onStatusChanged: (Boolean) -> Unit) {
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
     }
-}
-
-@Composable
-fun CountdownDisplay(
-    expirationString: String,
-    color: Color
-) {
-    var timeLeft by remember { mutableStateOf("Calculando...") }
-
-    LaunchedEffect(expirationString) {
-        try {
-            val expiresAt = Instant.parse(expirationString)
-            while (true) {
-                val now = Instant.now()
-                val diff = Duration.between(now, expiresAt)
-
-                if (diff.isNegative || diff.isZero) {
-                    timeLeft = "00:00:00"
-                    break
-                } else {
-                    val hours = diff.toHours()
-                    val minutes = diff.toMinutesPart()
-                    val seconds = diff.toSecondsPart()
-                    timeLeft = String.format("%02d:%02d:%02d", hours, minutes, seconds)
-                }
-                delay(1000L)
-            }
-        } catch (_: DateTimeParseException) {
-            timeLeft = "Error fecha"
-        }
-    }
-
-    Text(
-        text = "Libre por: $timeLeft",
-        color = color,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.SemiBold
-    )
 }
