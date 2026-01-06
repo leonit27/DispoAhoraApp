@@ -155,6 +155,32 @@ class AuthViewModel: ViewModel() {
         }
     }
 
+    fun signUpWithEmail(email: String, password: String) {
+        if (email.isBlank() || password.isBlank()) {
+            _authState.value = AuthState.Error("Email y contraseña son obligatorios")
+            return
+        }
+
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+            try {
+                supabase.auth.signUpWith(Email) {
+                    this.email = email
+                    this.password = password
+                }
+
+                val user = supabase.auth.currentUserOrNull()
+                if (user != null) {
+                    getUserDataAndNavigate(user)
+                } else {
+                    _authState.value = AuthState.SignedOut
+                }
+            } catch (e: Exception) {
+                _authState.value = AuthState.Error(e.localizedMessage ?: "Error al registrarse")
+            }
+        }
+    }
+
     fun signOut() {
         viewModelScope.launch {
             try {

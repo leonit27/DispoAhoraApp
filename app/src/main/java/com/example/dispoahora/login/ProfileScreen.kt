@@ -19,10 +19,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.dispoahora.GradientBackground
 import com.example.dispoahora.TextDark
 import com.example.dispoahora.TextGrayLight
@@ -35,6 +37,7 @@ val DangerText = Color(0xFFDC2626)
 @Composable
 fun ProfileScreen(
     username: String?,
+    avatarUrl: String?,
     email: String,
     onSignOut: () -> Unit
 ) {
@@ -53,7 +56,7 @@ fun ProfileScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            MainProfileCard(username)
+            MainProfileCard(username, avatarUrl)
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -63,8 +66,6 @@ fun ProfileScreen(
                 InfoItem(label = "Nombre", value = username)
                 HorizontalDivider(color = Color.Black.copy(alpha = 0.05f))
                 InfoItem(label = "Usuario", value = "@${username?.lowercase()?.replace(" ", "")}")
-                HorizontalDivider(color = Color.Black.copy(alpha = 0.05f))
-                InfoItem(label = "Teléfono", value = "+34 ••• •• 321")
                 HorizontalDivider(color = Color.Black.copy(alpha = 0.05f))
                 InfoItem(label = "Correo", value = email, showArrow = false)
             }
@@ -113,7 +114,7 @@ fun ProfileScreen(
 }
 
 @Composable
-fun MainProfileCard(username: String?) {
+fun MainProfileCard(username: String?, avatarUrl: String?) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.7f)),
         shape = RoundedCornerShape(24.dp),
@@ -121,7 +122,6 @@ fun MainProfileCard(username: String?) {
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                // Avatar Grande
                 Box(
                     modifier = Modifier
                         .size(64.dp)
@@ -133,20 +133,30 @@ fun MainProfileCard(username: String?) {
                         ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = username?.take(1)?.uppercase() ?: "",
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF3730A3)
-                    )
+                    if (!avatarUrl.isNullOrBlank()) {
+                        AsyncImage(
+                            model = avatarUrl,
+                            contentDescription = "Avatar de $username",
+                            modifier = Modifier.fillMaxSize().clip(CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else {
+                        Text(
+                            text = username?.take(1)?.uppercase() ?: "",
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF3730A3)
+                        )
+                    }
                 }
+
                 Spacer(modifier = Modifier.width(16.dp))
+
                 Column(modifier = Modifier.weight(1f)) {
                     if (username != null) {
                         Text(username, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = TextDark)
                     }
                     Text("@${username?.lowercase()?.replace(" ", "")}", fontSize = 14.sp, color = TextGrayLight)
-                    Text("Mi círculo cercano y amigos de confianza", fontSize = 12.sp, color = TextGrayLight, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
             }
 
@@ -157,7 +167,6 @@ fun MainProfileCard(username: String?) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Stats
                 Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
                     ProfileStat("128", "Seguidores")
                     ProfileStat("94", "Siguiendo")
@@ -165,7 +174,7 @@ fun MainProfileCard(username: String?) {
                 }
 
                 Button(
-                    onClick = { /* TODO: Editar */ },
+                    onClick = { /**/ },
                     colors = ButtonDefaults.buttonColors(containerColor = EditButtonBg, contentColor = EditButtonText),
                     shape = RoundedCornerShape(50),
                     contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),

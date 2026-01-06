@@ -106,10 +106,12 @@ fun DispoAhoraApp(authViewModel: AuthViewModel) {
 
             composable(Screen.Profile.route) {
                 val user = (authState as? AuthState.SignedIn)?.userName ?: "Usuario"
+                val avatar = (authState as? AuthState.SignedIn)?.avatarUrl
                 val email = "usuario@ejemplo.com"
 
                 ProfileScreen(
                     username = user,
+                    avatarUrl = avatar,
                     email = email,
                     onSignOut = {
                         authViewModel.signOut()

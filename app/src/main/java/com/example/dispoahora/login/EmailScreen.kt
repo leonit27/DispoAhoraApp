@@ -1,5 +1,6 @@
 package com.example.dispoahora.login
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,6 +26,10 @@ fun EmailLoginScreen(
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    var isRegisterMode by remember { mutableStateOf(false) }
+
+    val state by authViewModel.authState.collectAsState()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -60,7 +65,7 @@ fun EmailLoginScreen(
             )
 
             Text(
-                text = "Inicia sesión con tu cuenta",
+                text = if (isRegisterMode) "Regístrate con un correo" else "Inicia sesión con tu cuenta",
                 color = Color.Gray,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(top = 8.dp)
@@ -113,7 +118,11 @@ fun EmailLoginScreen(
 
             Button(
                 onClick = {
-                    authViewModel.signInWithEmail(email, password)
+                    if (isRegisterMode) {
+                        authViewModel.signUpWithEmail(email, password)
+                    } else {
+                        authViewModel.signInWithEmail(email, password)
+                    }
                 },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color.White,
@@ -125,7 +134,7 @@ fun EmailLoginScreen(
                     .height(54.dp)
             ) {
                 Text(
-                    text = "Iniciar Sesión",
+                    text = if (isRegisterMode) "Registrarse" else "Iniciar Sesión",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
@@ -134,10 +143,12 @@ fun EmailLoginScreen(
             Spacer(modifier = Modifier.weight(1f))
 
             Text(
-                text = "¿No tienes cuenta? Regístrate",
+                text = if (isRegisterMode) "¿Ya tienes cuenta? Inicia sesión" else "¿No tienes cuenta? Regístrate",
                 color = Color.Gray,
                 fontSize = 14.sp,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .padding(bottom = 16.dp)
+                    .clickable { isRegisterMode = !isRegisterMode }
             )
         }
     }
