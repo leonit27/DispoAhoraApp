@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,11 +25,11 @@ fun EmailLoginScreen(
     authViewModel: AuthViewModel = viewModel(),
     onBack: () -> Unit
 ) {
+    var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
 
     var isRegisterMode by remember { mutableStateOf(false) }
-
     val state by authViewModel.authState.collectAsState()
 
     Surface(
@@ -72,6 +73,24 @@ fun EmailLoginScreen(
             )
 
             Spacer(modifier = Modifier.height(48.dp))
+
+            if (isRegisterMode) {
+                OutlinedTextField(
+                    value = fullName,
+                    onValueChange = { fullName = it },
+                    label = { Text("Nombre Completo", color = Color.Gray) },
+                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = Color.Gray) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = Color.Gray, unfocusedTextColor = Color.Gray,
+                        focusedBorderColor = Color.White, unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                        cursorColor = Color.Gray, focusedLabelColor = Color.White, unfocusedLabelColor = Color.Gray
+                    )
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
 
             OutlinedTextField(
                 value = email,
@@ -119,7 +138,7 @@ fun EmailLoginScreen(
             Button(
                 onClick = {
                     if (isRegisterMode) {
-                        authViewModel.signUpWithEmail(email, password)
+                        authViewModel.signUpWithEmail(email, password, fullName)
                     } else {
                         authViewModel.signInWithEmail(email, password)
                     }

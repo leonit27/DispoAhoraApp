@@ -18,9 +18,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.buildJsonObject
 
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.put
 
 sealed class AuthState {
     object Loading: AuthState()
@@ -253,9 +255,9 @@ class AuthViewModel: ViewModel() {
         }
     }
 
-    fun signUpWithEmail(email: String, password: String) {
-        if (email.isBlank() || password.isBlank()) {
-            _authState.value = AuthState.Error("Email y contraseña son obligatorios")
+    fun signUpWithEmail(email: String, password: String, fullName: String) {
+        if (email.isBlank() || password.isBlank() || fullName.isBlank()) {
+            _authState.value = AuthState.Error("Todos los campos son obligatorios")
             return
         }
 
@@ -265,6 +267,9 @@ class AuthViewModel: ViewModel() {
                 supabase.auth.signUpWith(Email) {
                     this.email = email
                     this.password = password
+                    data = buildJsonObject {
+                        put("full_name", fullName)
+                    }
                 }
 
                 val user = supabase.auth.currentUserOrNull()
