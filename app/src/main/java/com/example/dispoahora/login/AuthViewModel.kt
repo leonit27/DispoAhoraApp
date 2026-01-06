@@ -181,6 +181,26 @@ class AuthViewModel: ViewModel() {
         }
     }
 
+    fun searchContacts(query: String) {
+        if (query.isBlank()) {
+            fetchContacts()
+            return
+        }
+
+        viewModelScope.launch {
+            try {
+                val result = supabase.from("profiles")
+                    .select {
+                        filter { ilike("full_name", "%$query%") }
+                    }
+                    .decodeList<ContactModel>()
+
+                _realUsers.value = result
+            } catch (e: Exception) {
+            }
+        }
+    }
+
     fun signInWithGoogleIdToken(idToken: String, rawNonce: String) {
         viewModelScope.launch {
             try {

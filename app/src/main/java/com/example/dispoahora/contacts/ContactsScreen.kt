@@ -40,6 +40,8 @@ val StatusGreen = Color(0xFF10B981)
 fun ContactsScreen(authViewModel: AuthViewModel = viewModel()) {
     val realUsers by authViewModel.realUsers.collectAsState()
 
+    var searchQuery by remember { mutableStateOf("") }
+
     LaunchedEffect(Unit) {
         authViewModel.fetchContacts()
     }
@@ -66,14 +68,18 @@ fun ContactsScreen(authViewModel: AuthViewModel = viewModel()) {
             modifier = Modifier.padding(top = 4.dp, bottom = 20.dp)
         )
 
-        SearchBarSection()
+        SearchBarSection(
+            query = searchQuery,
+            onQueryChange = { searchQuery = it },
+            onSearchClick = { authViewModel.searchContacts(searchQuery) }
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
         SectionTitle("FAVORITOS")
 
         if (realUsers.isEmpty()) {
-            Text("Cargando contactos...", color = TextGray, modifier = Modifier.padding(16.dp))
+            Text("No se encontraron usuarios", color = TextGray, modifier = Modifier.padding(16.dp))
         } else {
             ContactGroupCard(realUsers)
         }
@@ -86,15 +92,19 @@ fun ContactsScreen(authViewModel: AuthViewModel = viewModel()) {
     }
 }
 @Composable
-fun SearchBarSection() {
+fun SearchBarSection(
+    query: String,
+    onQueryChange: (String) -> Unit,
+    onSearchClick: () -> Unit
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth()
     ) {
         TextField(
-            value = "",
-            onValueChange = {},
-            placeholder = { Text("Buscar nombre o alias", color = TextGray) },
+            value = query,
+            onValueChange = onQueryChange,
+            placeholder = { Text("Buscar nombre o usuario", color = TextGray) },
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.White,
                 unfocusedContainerColor = Color.White.copy(alpha = 0.7f),
@@ -110,7 +120,7 @@ fun SearchBarSection() {
         Spacer(modifier = Modifier.width(12.dp))
 
         Button(
-            onClick = { /**/ },
+            onClick = onSearchClick,
             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD4F5BE)),
             shape = RoundedCornerShape(16.dp),
             contentPadding = PaddingValues(0.dp),
