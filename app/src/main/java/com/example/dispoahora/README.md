@@ -28,20 +28,20 @@ espontáneas (café, deporte, charlas) basándose en su ubicación actual.
 ## Capturas de pantalla
 
 ### Acceso y Perfil
-![Login](imagenes/Login.jpg)
-![Register](imagenes/Register.jpg)
-![Perfil](imagenes/Perfil.jpg)
-![Perfil2](imagenes/Perfil2.jpg)
+![Login](images/Login.jpg)
+![Register](images/Register.jpg)
+![Perfil](images/Perfil.jpg)
+![Perfil2](images/Perfil2.jpg)
 
 ### Estado y Actividad
-![PantallaPrincipal](imagenes/PantallaPrincipal.jpg)
-![EstadoLibre](imagenes/EstadoLibre.jpg)
-![EstadoOcupado](imagenes/EstadoOcupado.jpg)
-![NuevaActividad](imagenes/NuevaActividad.jpg)
+![PantallaPrincipal](images/PantallaPrincipal.jpg)
+![EstadoLibre](images/EstadoLibre.jpg)
+![EstadoOcupado](images/EstadoOcupado.jpg)
+![NuevaActividad](images/NuevaActividad.jpg)
 
 ### Social y Mapa
-![Contactos](imagenes/Contactos.jpg)
-![Búsqueda](imagenes/Búsqueda.jpg)
-![DropDownMenu](imagenes/DropDownMenu.jpg)
-![Mapa](imagenes/Mapa.jpg)
+![Contactos](images/Contactos.jpg)
+![Búsqueda](images/Búsqueda.jpg)
+![DropDownMenu](images/DropDownMenu.jpg)
+![Mapa](images/Mapa.jpg)
 
