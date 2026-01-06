@@ -2,6 +2,7 @@ package com.example.dispoahora.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.dispoahora.contacts.ContactModel
 import com.example.dispoahora.supabase.supabase
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
@@ -41,6 +42,9 @@ class AuthViewModel: ViewModel() {
 
     private val _userStats = MutableStateFlow(UserStats())
     val userStats: StateFlow<UserStats> = _userStats.asStateFlow()
+
+    private val _realUsers = MutableStateFlow<List<ContactModel>>(emptyList())
+    val realUsers: StateFlow<List<ContactModel>> = _realUsers.asStateFlow()
 
     init {
         checkCurrentSession()
@@ -156,6 +160,29 @@ class AuthViewModel: ViewModel() {
 
             } catch (e: Exception) {
                 android.util.Log.e("STATS_ERROR", "Error: ${e.message}")
+            }
+        }
+    }
+
+    fun fetchContacts() {
+        viewModelScope.launch {
+            try {
+                // Log para saber que la función se ejecuta
+                android.util.Log.d("SUPABASE_DEBUG", "Iniciando descarga de contactos...")
+
+                val result = supabase.from("profiles") // Verifica que tu tabla se llame "profiles"
+                    .select() {
+                        limit(3)
+                    }
+                    .decodeList<ContactModel>()
+
+                android.util.Log.d("SUPABASE_DEBUG", "Usuarios recibidos: ${result.size}")
+                _realUsers.value = result
+
+            } catch (e: Exception) {
+                // Esto te dirá en el Logcat si hay un error de red o de tabla
+                android.util.Log.e("SUPABASE_DEBUG", "Error: ${e.message}")
+                e.printStackTrace()
             }
         }
     }

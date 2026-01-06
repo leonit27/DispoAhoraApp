@@ -8,7 +8,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,12 +16,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.dispoahora.PastelBlueBottom
 import com.example.dispoahora.PastelBlueTop
+import com.example.dispoahora.login.AuthViewModel
 import com.example.dispoahora.utils.SectionTitle
+import kotlinx.serialization.Serializable
 
 val GradientBackground = Brush.verticalGradient(
     colors = listOf(PastelBlueTop, PastelBlueBottom)
@@ -31,10 +35,15 @@ val CardBackground = Color.White.copy(alpha = 0.9f)
 val TextDark = Color(0xFF1F2937)
 val TextGray = Color(0xFF6B7280)
 val StatusGreen = Color(0xFF10B981)
-val BadgeGreenBg = Color(0xFFD1FAE5)
 
 @Composable
-fun ContactsScreen() {
+fun ContactsScreen(authViewModel: AuthViewModel = viewModel()) {
+    val realUsers by authViewModel.realUsers.collectAsState()
+
+    LaunchedEffect(Unit) {
+        authViewModel.fetchContacts()
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -62,12 +71,16 @@ fun ContactsScreen() {
         Spacer(modifier = Modifier.height(24.dp))
 
         SectionTitle("FAVORITOS")
-        ContactGroupCard(getFavoritesList())
+
+        if (realUsers.isEmpty()) {
+            Text("Cargando contactos...", color = TextGray, modifier = Modifier.padding(16.dp))
+        } else {
+            ContactGroupCard(realUsers)
+        }
 
         Spacer(modifier = Modifier.height(20.dp))
 
         SectionTitle("CERCA DE TI")
-        ContactGroupCard(getNearbyList())
 
         Spacer(modifier = Modifier.height(50.dp))
     }
@@ -128,7 +141,7 @@ fun ContactGroupCard(
             contacts.forEachIndexed { index, contact ->
                 ContactItemRow(contact)
                 if (index < contacts.lastIndex) {
-                    Divider(
+                    HorizontalDivider(
                         color = Color.Gray.copy(alpha = 0.1f),
                         thickness = 1.dp,
                         modifier = Modifier.padding(horizontal = 20.dp)
@@ -147,30 +160,26 @@ fun ContactItemRow(contact: ContactModel) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box {
-            Box(
-                modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFE0E7FF)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = contact.name.take(1),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4338CA)
+            if (!contact.avatar_url.isNullOrBlank()) {
+                AsyncImage(
+                    model = contact.avatar_url,
+                    contentDescription = null,
+                    modifier = Modifier.size(48.dp).clip(CircleShape),
+                    contentScale = ContentScale.Crop
                 )
-            }
-            if (contact.isOnline) {
+            } else {
                 Box(
-                    modifier = Modifier
-                        .size(14.dp)
-                        .clip(CircleShape)
-                        .background(Color.White)
-                        .padding(2.dp)
-                        .clip(CircleShape)
-                        .background(StatusGreen)
-                        .align(Alignment.BottomEnd)
+                    modifier = Modifier.size(48.dp).clip(CircleShape).background(Color(0xFFE0E7FF)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(text = contact.full_name.take(1), fontWeight = FontWeight.Bold, color = Color(0xFF4338CA))
+                }
+            }
+
+            if (contact.status == "Libre") {
+                Box(
+                    modifier = Modifier.size(14.dp).clip(CircleShape).background(Color.White).padding(2.dp)
+                        .clip(CircleShape).background(StatusGreen).align(Alignment.BottomEnd)
                 )
             }
         }
@@ -178,75 +187,34 @@ fun ContactItemRow(contact: ContactModel) {
         Spacer(modifier = Modifier.width(14.dp))
 
         Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = contact.name,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = TextDark
-                )
-
-                if (contact.statusTag != null) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(BadgeGreenBg)
-                            .padding(horizontal = 6.dp, vertical = 2.dp)
-                    ) {
-                        Text(
-                            text = contact.statusTag,
-                            color = Color(0xFF065F46),
-                            fontSize = 10.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            }
-            Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = contact.activity,
+                text = contact.full_name,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+                color = TextDark
+            )
+            Text(
+                text = contact.bio ?: "Sin actividad reciente",
                 fontSize = 13.sp,
                 color = TextGray,
                 maxLines = 1
             )
         }
 
-        Column(horizontalAlignment = Alignment.End) {
-            if (contact.distanceTag != null) {
-                Text(
-                    text = contact.distanceTag,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if(contact.isOnline) StatusGreen else TextGray
-                )
-            }
-            Text(
-                text = contact.locationName,
-                fontSize = 11.sp,
-                color = TextGray.copy(alpha = 0.7f)
-            )
-        }
+        Text(
+            text = contact.status ?: "Ocupado",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = if(contact.status == "Libre") StatusGreen else TextGray
+        )
     }
 }
 
+@Serializable
 data class ContactModel(
-    val name: String,
-    val statusTag: String?,
-    val activity: String,
-    val distanceTag: String?,
-    val locationName: String,
-    val isOnline: Boolean
-)
-
-fun getFavoritesList() = listOf(
-    ContactModel("Ana", "Libre ahora", "Café • Hasta las 20:30", "Muy cerca", "En tu misma zona", true),
-    ContactModel("Javi", "Libre", "Charlar • Esta tarde", "En tu zona", "Barrios cercanos", true),
-    ContactModel("Luis", "Libre", "Deporte • Próxima hora", "En tu zona", "Parque o alrededores", true)
-)
-
-fun getNearbyList() = listOf(
-    ContactModel("María", null, "Ocupada • Responderá luego", null, "En la ciudad", false),
-    ContactModel("Paula", "Libre", "Cena • Próximas 2 h", "Muy cerca", "En tu zona", true),
-    ContactModel("Carlos", null, "Sin actividad visible", null, "Lejos", false)
+    val id: String,
+    val full_name: String,
+    val avatar_url: String? = null,
+    val status: String? = "Desconectado",
+    val bio: String? = null
 )
