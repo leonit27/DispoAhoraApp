@@ -2,6 +2,7 @@ package com.example.dispoahora.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.dispoahora.ai.GeminiService
 import com.example.dispoahora.contacts.ContactModel
 import com.example.dispoahora.supabase.supabase
 import io.github.jan.supabase.auth.auth
@@ -52,6 +53,10 @@ class AuthViewModel: ViewModel() {
 
     private val _nearbyUsers = MutableStateFlow<List<ContactModel>>(emptyList())
     val nearbyUsers: StateFlow<List<ContactModel>> = _nearbyUsers.asStateFlow()
+
+    private val geminiService by lazy { GeminiService() }
+    private val _aiSuggestion = MutableStateFlow("")
+    val aiSuggestion: StateFlow<String> = _aiSuggestion.asStateFlow()
 
     init {
         checkCurrentSession()
@@ -266,6 +271,15 @@ class AuthViewModel: ViewModel() {
                 _nearbyUsers.value = response.filter { it.id != myId && it.status == "Libre" }
 
             } catch (_: Exception) {
+            }
+        }
+    }
+
+    fun generateActivitySuggestion(locationName: String) {
+        viewModelScope.launch {
+            val suggestion = geminiService.suggestActivity("Ubicación: $locationName")
+            if (suggestion != null) {
+                _aiSuggestion.value = suggestion
             }
         }
     }

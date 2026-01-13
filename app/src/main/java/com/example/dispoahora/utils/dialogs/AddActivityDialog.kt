@@ -71,13 +71,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dispoahora.AccentBlue
 
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.dispoahora.login.AuthViewModel
+import androidx.compose.material3.IconButton
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+
 @Composable
 fun AddActivityDialog(
     onDismiss: () -> Unit,
-    onActivityAdded: (String, ImageVector) -> Unit
+    onActivityAdded: (String, ImageVector) -> Unit,
+    authViewModel: AuthViewModel = viewModel()
 ) {
     var activityName by remember { mutableStateOf("") }
     var selectedIcon by remember { mutableStateOf(Icons.Default.Add) }
+
+    val aiSuggestion by authViewModel.aiSuggestion.collectAsState()
+
+    LaunchedEffect(aiSuggestion) {
+        if (aiSuggestion.isNotBlank()) {
+            activityName = aiSuggestion
+        }
+    }
 
     val availableIcons = listOf(
         Icons.Default.Add, Icons.Default.Home, Icons.Default.Edit,
@@ -106,7 +121,18 @@ fun AddActivityDialog(
                     label = { Text("Nombre de la actividad") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(12.dp),
+                    trailingIcon = {
+                        IconButton(onClick = {
+                            authViewModel.generateActivitySuggestion("un plan espontáneo y corto")
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = "Sugerencia IA",
+                                tint = Color(0xFF6200EE)
+                            )
+                        }
+                    }
                 )
 
                 Text("Elige un icono", fontSize = 14.sp, fontWeight = FontWeight.Medium)

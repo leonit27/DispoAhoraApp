@@ -33,6 +33,8 @@ android {
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"${localProperties.getProperty("SUPABASE_ANON_KEY")}\"")
         buildConfigField("String", "WEB_GOOGLE_CLIENT_ID", "\"${localProperties.getProperty("WEB_GOOGLE_CLIENT_ID")}\"")
         buildConfigField("String", "MAPBOX_DOWNLOADS_TOKEN", "\"${localProperties.getProperty("MAPBOX_DOWNLOADS_TOKEN")}\"")
+        buildConfigField("String", "API_KEY", "\"${localProperties.getProperty("API_KEY")}\"")
+
     }
 
     buildTypes {
@@ -54,6 +56,13 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/versions/9/previous-compilation-data.bin"
+        }
     }
 }
 
@@ -103,4 +112,10 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
     implementation("com.google.android.gms:play-services-location:21.0.1")
+
+    val ktorVersion = "3.0.1"
+    implementation("io.ktor:ktor-client-core:$ktorVersion")
+    implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
+    implementation("io.ktor:ktor-client-plugins:$ktorVersion")
+    implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
 }
